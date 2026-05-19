@@ -7,7 +7,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "RoomOfInvoice")
+@Table(name = "RoomOfInvoice",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"InvoiceId", "RoomId"}
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
