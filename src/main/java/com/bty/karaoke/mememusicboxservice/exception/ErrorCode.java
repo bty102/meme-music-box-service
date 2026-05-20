@@ -15,7 +15,20 @@ public enum ErrorCode {
     AREA_NOT_EXISTED(1005, "Area not exists", HttpStatus.BAD_REQUEST),
     AREA_ACTIVE_STATE_NULL(1006, "Area active state must be not null", HttpStatus.BAD_REQUEST),
     EXISTING_ACTIVE_ROOM_OF_AREA(1007, "Existing an active room of the area", HttpStatus.BAD_REQUEST),
+    AREA_ID_NULL(1008, "Area id must be not null", HttpStatus.BAD_REQUEST),
+
+    // Room
+    ROOM_NUMBER_RANGE_NOT_VALID(2001, "Room number must be greater than or equal to 1", HttpStatus.BAD_REQUEST),
+    ROOM_NUMBER_NULL(2002, "Room number must be not null", HttpStatus.BAD_REQUEST),
+    ROOM_CAPACITY_NULL(2003, "Room capacity must be not null", HttpStatus.BAD_REQUEST),
+    ROOM_CAPACITY_RANGE_NOT_VALID(2004, "Room capacity must be greater than or equal to 1", HttpStatus.BAD_REQUEST),
+    ROOM_HOURLY_RATE_NULL(2005, "Room hourly rate must be not null", HttpStatus.BAD_REQUEST),
+    ROOM_HOURLY_RATE_RANGE_NOT_VALID(2006, "Room hourly rate must be greater than or equal to 0", HttpStatus.BAD_REQUEST),
+    ROOM_NUMBER_EXISTED(2007, "Room number already exists", HttpStatus.BAD_REQUEST),
+    AREA_OF_ROOM_NOT_ACTIVE(2008, "Area of room not active", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_EXISTED(2009, "Room not exists", HttpStatus.BAD_REQUEST),
     ;
+
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
         this.message = message;
