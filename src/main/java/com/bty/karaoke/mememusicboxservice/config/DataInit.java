@@ -1,7 +1,9 @@
 package com.bty.karaoke.mememusicboxservice.config;
 
+import com.bty.karaoke.mememusicboxservice.dto.request.ProductCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomAreaCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
+import com.bty.karaoke.mememusicboxservice.service.ProductService;
 import com.bty.karaoke.mememusicboxservice.service.RoomAreaService;
 import com.bty.karaoke.mememusicboxservice.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +19,13 @@ public class DataInit implements CommandLineRunner {
 
     private final RoomAreaService roomAreaService;
     private final RoomService roomService;
+    private final ProductService productService;
 
     @Override
     public void run(String... args) throws Exception {
         initRoomAreas();
         initRooms();
+        initProducts();
     }
 
     private void initRoomAreas() {
@@ -129,6 +133,57 @@ public class DataInit implements CommandLineRunner {
         for (RoomCreationRequest room : rooms) {
             try {
                 roomService.createRoom(room);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    private void initProducts() {
+
+        List<ProductCreationRequest> products = List.of(
+
+                ProductCreationRequest.builder().productCode("BIA001").productName("Bia Huda").unit("Lon").unitPrice(new BigDecimal("20000")).stockQuantity(200).build(),
+                ProductCreationRequest.builder().productCode("BIA002").productName("Bia Tiger").unit("Lon").unitPrice(new BigDecimal("25000")).stockQuantity(200).build(),
+                ProductCreationRequest.builder().productCode("BIA003").productName("Bia Heineken").unit("Lon").unitPrice(new BigDecimal("30000")).stockQuantity(200).build(),
+                ProductCreationRequest.builder().productCode("BIA004").productName("Bia Saigon").unit("Lon").unitPrice(new BigDecimal("18000")).stockQuantity(200).build(),
+                ProductCreationRequest.builder().productCode("BIA005").productName("Bia Larue").unit("Lon").unitPrice(new BigDecimal("17000")).stockQuantity(200).build(),
+
+                ProductCreationRequest.builder().productCode("NUOC001").productName("Coca Cola").unit("Lon").unitPrice(new BigDecimal("15000")).stockQuantity(300).build(),
+                ProductCreationRequest.builder().productCode("NUOC002").productName("Pepsi").unit("Lon").unitPrice(new BigDecimal("15000")).stockQuantity(300).build(),
+                ProductCreationRequest.builder().productCode("NUOC003").productName("7 Up").unit("Lon").unitPrice(new BigDecimal("15000")).stockQuantity(300).build(),
+                ProductCreationRequest.builder().productCode("NUOC004").productName("Sting Dâu").unit("Lon").unitPrice(new BigDecimal("16000")).stockQuantity(300).build(),
+                ProductCreationRequest.builder().productCode("NUOC005").productName("Red Bull").unit("Lon").unitPrice(new BigDecimal("18000")).stockQuantity(300).build(),
+
+                ProductCreationRequest.builder().productCode("SNACK001").productName("Khô Gà Lá Chanh").unit("Đĩa").unitPrice(new BigDecimal("89000")).stockQuantity(100).build(),
+                ProductCreationRequest.builder().productCode("SNACK002").productName("Khô Bò").unit("Đĩa").unitPrice(new BigDecimal("99000")).stockQuantity(100).build(),
+                ProductCreationRequest.builder().productCode("SNACK003").productName("Cá Viên Chiên").unit("Phần").unitPrice(new BigDecimal("69000")).stockQuantity(100).build(),
+                ProductCreationRequest.builder().productCode("SNACK004").productName("Xúc Xích Chiên").unit("Phần").unitPrice(new BigDecimal("59000")).stockQuantity(100).build(),
+                ProductCreationRequest.builder().productCode("SNACK005").productName("Khoai Tây Chiên").unit("Phần").unitPrice(new BigDecimal("79000")).stockQuantity(100).build(),
+
+                ProductCreationRequest.builder().productCode("TRAI001").productName("Trái Cây Thập Cẩm").unit("Đĩa").unitPrice(new BigDecimal("120000")).stockQuantity(50).build(),
+                ProductCreationRequest.builder().productCode("TRAI002").productName("Dưa Hấu").unit("Đĩa").unitPrice(new BigDecimal("70000")).stockQuantity(50).build(),
+                ProductCreationRequest.builder().productCode("TRAI003").productName("Ổi Xí Muội").unit("Đĩa").unitPrice(new BigDecimal("65000")).stockQuantity(50).build(),
+                ProductCreationRequest.builder().productCode("TRAI004").productName("Cóc Lắc").unit("Đĩa").unitPrice(new BigDecimal("69000")).stockQuantity(50).build(),
+                ProductCreationRequest.builder().productCode("TRAI005").productName("Xoài Muối Ớt").unit("Đĩa").unitPrice(new BigDecimal("75000")).stockQuantity(50).build(),
+
+                ProductCreationRequest.builder().productCode("MI001").productName("Mì Xào Bò").unit("Phần").unitPrice(new BigDecimal("99000")).stockQuantity(80).build(),
+                ProductCreationRequest.builder().productCode("MI002").productName("Mì Xào Hải Sản").unit("Phần").unitPrice(new BigDecimal("109000")).stockQuantity(80).build(),
+                ProductCreationRequest.builder().productCode("COM001").productName("Cơm Chiên Hải Sản").unit("Phần").unitPrice(new BigDecimal("119000")).stockQuantity(80).build(),
+                ProductCreationRequest.builder().productCode("COM002").productName("Cơm Chiên Dương Châu").unit("Phần").unitPrice(new BigDecimal("99000")).stockQuantity(80).build(),
+                ProductCreationRequest.builder().productCode("LAU001").productName("Lẩu Thái").unit("Nồi").unitPrice(new BigDecimal("299000")).stockQuantity(30).build(),
+
+                ProductCreationRequest.builder().productCode("THUOC001").productName("Thuốc Marlboro").unit("Gói").unitPrice(new BigDecimal("45000")).stockQuantity(100).build(),
+                ProductCreationRequest.builder().productCode("THUOC002").productName("Thuốc Jet").unit("Gói").unitPrice(new BigDecimal("30000")).stockQuantity(100).build(),
+
+                ProductCreationRequest.builder().productCode("KHAN001").productName("Khăn Lạnh").unit("Cái").unitPrice(new BigDecimal("5000")).stockQuantity(500).build(),
+                ProductCreationRequest.builder().productCode("NUOC006").productName("Nước Suối Aquafina").unit("Chai").unitPrice(new BigDecimal("10000")).stockQuantity(500).build(),
+                ProductCreationRequest.builder().productCode("NUOC007").productName("Trà Xanh Không Độ").unit("Chai").unitPrice(new BigDecimal("18000")).stockQuantity(300).build()
+        );
+
+        for (ProductCreationRequest product : products) {
+            try {
+                productService.createProduct(product);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

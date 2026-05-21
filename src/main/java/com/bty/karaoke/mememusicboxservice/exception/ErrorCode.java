@@ -29,6 +29,20 @@ public enum ErrorCode {
     ROOM_NOT_EXISTED(2009, "Room not exists", HttpStatus.BAD_REQUEST),
     ROOM_ACTIVE_STATE_NULL(2010, "Room active state must be not null", HttpStatus.BAD_REQUEST),
     ROOM_STATUS_NOT_AVAILABLE(2011, "Room status not available", HttpStatus.BAD_REQUEST),
+
+    // Product
+    PRODUCT_CODE_NULL(3001, "Product code must be not null", HttpStatus.BAD_REQUEST),
+    PRODUCT_CODE_SIZE_NOT_VALID(3002, "Product code size must be between 1 and 20", HttpStatus.BAD_REQUEST),
+    PRODUCT_NAME_NULL(3003, "Product name must be not null", HttpStatus.BAD_REQUEST),
+    PRODUCT_NAME_SIZE_NOT_VALID(3004, "Product name size must be between 1 and 100", HttpStatus.BAD_REQUEST),
+    PRODUCT_UNIT_NULL(3005, "Product unit must be not null", HttpStatus.BAD_REQUEST),
+    PRODUCT_UNIT_SIZE_NOT_VALID(3006, "Product unit size must be between 1 and 20", HttpStatus.BAD_REQUEST),
+    PRODUCT_UNIT_PRICE_NULL(3007, "Product unit price must be not null", HttpStatus.BAD_REQUEST),
+    PRODUCT_UNIT_PRICE_RANGE_NOT_VALID(3008, "Product unit price must be greater than or equal to 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_STOCK_QUANTITY_NULL(3009, "Product stock quantity must be not null", HttpStatus.BAD_REQUEST),
+    PRODUCT_STOCK_QUANTITY_RANGE_NOT_VALID(3010, "Product stock quantity must be greater than or equal to 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_CODE_EXISTED(3011, "Product code already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_NAME_EXISTED(3012, "Product name already exists", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
