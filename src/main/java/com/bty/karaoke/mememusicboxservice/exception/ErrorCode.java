@@ -27,6 +27,8 @@ public enum ErrorCode {
     ROOM_NUMBER_EXISTED(2007, "Room number already exists", HttpStatus.BAD_REQUEST),
     AREA_OF_ROOM_NOT_ACTIVE(2008, "Area of room not active", HttpStatus.BAD_REQUEST),
     ROOM_NOT_EXISTED(2009, "Room not exists", HttpStatus.BAD_REQUEST),
+    ROOM_ACTIVE_STATE_NULL(2010, "Room active state must be not null", HttpStatus.BAD_REQUEST),
+    ROOM_STATUS_NOT_AVAILABLE(2011, "Room status not available", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

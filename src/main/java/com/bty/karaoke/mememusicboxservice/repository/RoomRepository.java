@@ -13,4 +13,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByRoomNumber(Integer roomNumber);
 
     Page<Room> findByArea_Id(Long areaId, Pageable pageable);
+
+    boolean existsByRoomNumberAndIdIsNot(Integer roomNumber, Long id);
+
+    Page<Room> findByRoomNumberOrCapacity(Integer roomNumber, Integer capacity, Pageable pageable);
 }

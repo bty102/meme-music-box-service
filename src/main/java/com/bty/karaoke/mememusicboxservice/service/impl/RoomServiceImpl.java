@@ -2,6 +2,7 @@ package com.bty.karaoke.mememusicboxservice.service.impl;
 
 import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.RoomUpdateRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.RoomResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Room;
 import com.bty.karaoke.mememusicboxservice.entity.RoomArea;
@@ -77,5 +78,50 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
         return roomMapper.toRoomResponse(room);
+    }
+
+    @Override
+    public RoomResponse updateRoom(Long id, @Valid RoomUpdateRequest request) {
+        if(id == null) {
+            throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
+        }
+        Room room = roomRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
+
+        if(roomRepository.existsByRoomNumberAndIdIsNot(request.getRoomNumber(), id)) {
+            throw new AppException(ErrorCode.ROOM_NUMBER_EXISTED);
+        }
+
+        RoomArea area = roomAreaRepository.findById(request.getAreaId())
+                .orElseThrow(() -> new AppException(ErrorCode.AREA_NOT_EXISTED));
+
+        if(request.getIsActive() && !area.getIsActive()) {
+            throw new AppException(ErrorCode.AREA_OF_ROOM_NOT_ACTIVE);
+        }
+        if(!request.getIsActive() && !room.getStatus().equals(RoomStatus.AVAILABLE)) {
+            throw new AppException(ErrorCode.ROOM_STATUS_NOT_AVAILABLE);
+        }
+
+        roomMapper.updateRoom(room, request);
+        room.setArea(area);
+        room = roomRepository.save(room);
+        return roomMapper.toRoomResponse(room);
+    }
+
+    @Override
+    public Page<RoomResponse> findRoomsByRoomNumberOrCapacity(Integer roomNumber, Integer capacity, int pageNumber, int pageSize) {
+        if(roomNumber == null) {
+            throw new AppException(ErrorCode.ROOM_NUMBER_NULL);
+        }
+        if(capacity == null) {
+            throw new AppException(ErrorCode.ROOM_CAPACITY_NULL);
+        }
+
+        if(pageNumber < 0) pageNumber = 0;
+        if(pageSize < 1) pageSize = 1;
+
+        Sort sort = Sort.by("roomNumber").ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        Page<Room> roomPage = roomRepository.findByRoomNumberOrCapacity(roomNumber, capacity, pageable);
+        return roomPage.map(room -> roomMapper.toRoomResponse(room));
     }
 }
