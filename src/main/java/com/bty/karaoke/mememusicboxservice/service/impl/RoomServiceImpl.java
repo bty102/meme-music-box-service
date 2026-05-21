@@ -71,6 +71,29 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Page<RoomResponse> findRoomsByAreaId(Long areaId, Boolean isActive, int pageNumber, int pageSize) {
+        if(areaId == null) {
+            throw new AppException(ErrorCode.AREA_NOT_EXISTED);
+        }
+
+        if(!roomAreaRepository.existsById(areaId)) {
+            throw new AppException(ErrorCode.AREA_NOT_EXISTED);
+        }
+
+        if(isActive == null) {
+            throw new AppException(ErrorCode.ROOM_ACTIVE_STATE_NULL);
+        }
+
+        if(pageNumber < 0) pageNumber = 0;
+        if(pageSize < 1) pageSize = 1;
+
+        Sort sort = Sort.by("roomNumber").ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        Page<Room> roomPage = roomRepository.findByArea_IdAndIsActive(areaId, isActive ,pageable);
+        return roomPage.map(room -> roomMapper.toRoomResponse(room));
+    }
+
+    @Override
     public RoomResponse findRoomById(Long id) {
         if(id == null) {
             throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
@@ -122,6 +145,29 @@ public class RoomServiceImpl implements RoomService {
         Sort sort = Sort.by("roomNumber").ascending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Room> roomPage = roomRepository.findByRoomNumberOrCapacity(roomNumber, capacity, pageable);
+        return roomPage.map(room -> roomMapper.toRoomResponse(room));
+    }
+
+    @Override
+    public Page<RoomResponse> findRoomsByRoomNumberOrCapacity(Integer roomNumber, Integer capacity, Boolean isActive, int pageNumber, int pageSize) {
+
+        if(roomNumber == null) {
+            throw new AppException(ErrorCode.ROOM_NUMBER_NULL);
+        }
+        if(capacity == null) {
+            throw new AppException(ErrorCode.ROOM_CAPACITY_NULL);
+        }
+
+        if(isActive == null) {
+            throw new AppException(ErrorCode.ROOM_ACTIVE_STATE_NULL);
+        }
+
+        if(pageNumber < 0) pageNumber = 0;
+        if(pageSize < 1) pageSize = 1;
+
+        Sort sort = Sort.by("roomNumber").ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        Page<Room> roomPage = roomRepository.findByRoomNumberAndIsActiveOrCapacityAndIsActive(roomNumber, isActive, capacity, isActive,pageable);
         return roomPage.map(room -> roomMapper.toRoomResponse(room));
     }
 }

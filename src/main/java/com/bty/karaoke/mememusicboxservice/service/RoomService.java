@@ -19,6 +19,8 @@ public interface RoomService {
      */
     public Page<RoomResponse> findRoomsByAreaId(Long areaId, int pageNumber, int pageSize);
 
+    public Page<RoomResponse> findRoomsByAreaId(Long areaId, Boolean isActive ,int pageNumber, int pageSize);
+
     public RoomResponse findRoomById(Long id);
 
     public RoomResponse updateRoom(Long id, @Valid RoomUpdateRequest request);
@@ -32,4 +34,15 @@ public interface RoomService {
      * @return
      */
     public Page<RoomResponse> findRoomsByRoomNumberOrCapacity(Integer roomNumber, Integer  capacity, int pageNumber, int pageSize);
+
+    /**
+     *
+     * @param roomNumber
+     * @param capacity
+     * @param isActive
+     * @param pageNumber must be >= 0
+     * @param pageSize must be >= 1
+     * @return
+     */
+    public Page<RoomResponse> findRoomsByRoomNumberOrCapacity(Integer roomNumber, Integer  capacity, Boolean isActive, int pageNumber, int pageSize);
 }
