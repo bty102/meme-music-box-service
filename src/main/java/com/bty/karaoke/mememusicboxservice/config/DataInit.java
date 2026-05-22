@@ -1,8 +1,10 @@
 package com.bty.karaoke.mememusicboxservice.config;
 
+import com.bty.karaoke.mememusicboxservice.dto.request.PointDiscountCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.ProductCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomAreaCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
+import com.bty.karaoke.mememusicboxservice.service.PointDiscountService;
 import com.bty.karaoke.mememusicboxservice.service.ProductService;
 import com.bty.karaoke.mememusicboxservice.service.RoomAreaService;
 import com.bty.karaoke.mememusicboxservice.service.RoomService;
@@ -20,12 +22,14 @@ public class DataInit implements CommandLineRunner {
     private final RoomAreaService roomAreaService;
     private final RoomService roomService;
     private final ProductService productService;
+    private final PointDiscountService pointDiscountService;
 
     @Override
     public void run(String... args) throws Exception {
         initRoomAreas();
         initRooms();
         initProducts();
+        initPointDiscounts();
     }
 
     private void initRoomAreas() {
@@ -189,4 +193,48 @@ public class DataInit implements CommandLineRunner {
             }
         }
     }
+
+    private void initPointDiscounts() {
+
+    List<PointDiscountCreationRequest> pointDiscounts = List.of(
+
+            PointDiscountCreationRequest.builder()
+                    .requiredPoint(100)
+                    .discountPercent(new BigDecimal("5"))
+                    .description("Giảm 5% cho hội viên đạt 100 điểm")
+                    .build(),
+
+            PointDiscountCreationRequest.builder()
+                    .requiredPoint(300)
+                    .discountPercent(new BigDecimal("10"))
+                    .description("Giảm 10% cho hội viên đạt 300 điểm")
+                    .build(),
+
+            PointDiscountCreationRequest.builder()
+                    .requiredPoint(500)
+                    .discountPercent(new BigDecimal("15"))
+                    .description("Giảm 15% cho hội viên đạt 500 điểm")
+                    .build(),
+
+            PointDiscountCreationRequest.builder()
+                    .requiredPoint(1000)
+                    .discountPercent(new BigDecimal("20"))
+                    .description("Giảm 20% cho hội viên đạt 1000 điểm")
+                    .build(),
+
+            PointDiscountCreationRequest.builder()
+                    .requiredPoint(2000)
+                    .discountPercent(new BigDecimal("30"))
+                    .description("Giảm 30% cho hội viên VIP đạt 2000 điểm")
+                    .build()
+    );
+
+    for (PointDiscountCreationRequest pointDiscount : pointDiscounts) {
+        try {
+            pointDiscountService.createPointDiscount(pointDiscount);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
 }

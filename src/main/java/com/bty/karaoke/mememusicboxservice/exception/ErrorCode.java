@@ -48,6 +48,16 @@ public enum ErrorCode {
     PRODUCT_NAME_EXISTED(3012, "Product name already exists", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_EXISTED(3013, "Product not exists", HttpStatus.BAD_REQUEST),
     PRODUCT_ACTIVE_STATE_NULL(3014, "Product active state must be not null", HttpStatus.BAD_REQUEST),
+
+    // PointDiscount
+    POINT_DISCOUNT_REQUIRED_POINT_NULL(4001, "Point discount must be not null", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_REQUIRED_POINT_IN_INVALID_RANGE(4002, "Point discount must be greater than or equal 0", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_DISCOUNT_PERCENT_NULL(4003, "Point discount percent must be not null", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_DISCOUNT_PERCENT_IN_INVALID_RANGE(4004, "Point discount percent must be between 0 and 100", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_DESCRIPTION_SIZE_NOT_VALID(4005, "Point discount description size must be between 0 and 255", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_REQUIRED_POINT_EXISTED(4006, "Required point already exists", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_NOT_EXISTED(4007, "Point discount not exists", HttpStatus.BAD_REQUEST),
+    POINT_DISCOUNT_DELETION_FAILED(4008, "Point discount deletion is failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
