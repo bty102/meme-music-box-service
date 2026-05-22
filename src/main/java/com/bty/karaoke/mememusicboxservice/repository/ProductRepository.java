@@ -13,4 +13,12 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     boolean existsByProductName(String productName);
 
     Page<Product> findByIsActive(Boolean isActive, Pageable pageable);
+
+    Page<Product> findByProductCodeContainingOrProductNameContaining(String productCode, String productName, Pageable pageable);
+
+    Page<Product> findByProductCodeContainingAndIsActiveOrProductNameContainingAndIsActive(String productCode, Boolean isActive, String productName, Boolean isActive1, Pageable pageable);
+
+    boolean existsByProductCodeAndIdIsNot(String productCode, Long id);
+
+    boolean existsByProductNameAndIdIsNot(String productName, Long id);
 }

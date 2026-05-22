@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatusCode;
 @Getter
 public enum ErrorCode {
 
+    INVALID_UPLOADED_IMAGE(1, "File must be image", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
+    IMAGE_UPLOAD_EXCEPTION(2, "Upload image failed", HttpStatus.INTERNAL_SERVER_ERROR),
+
     // RoomArea
     AREA_NAME_NULL(1001, "Area name must be not null", HttpStatus.BAD_REQUEST),
     INVALID_AREA_NAME_SIZE(1002, "Area name size must be between 1 character and 100 characters", HttpStatus.BAD_REQUEST),
@@ -43,6 +46,8 @@ public enum ErrorCode {
     PRODUCT_STOCK_QUANTITY_RANGE_NOT_VALID(3010, "Product stock quantity must be greater than or equal to 0", HttpStatus.BAD_REQUEST),
     PRODUCT_CODE_EXISTED(3011, "Product code already exists", HttpStatus.BAD_REQUEST),
     PRODUCT_NAME_EXISTED(3012, "Product name already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_EXISTED(3013, "Product not exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_ACTIVE_STATE_NULL(3014, "Product active state must be not null", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
