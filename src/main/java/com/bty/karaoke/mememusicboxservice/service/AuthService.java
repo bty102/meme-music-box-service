@@ -9,4 +9,6 @@ public interface AuthService {
     public AuthenticationResponse authenticate(AuthenticationRequest request);
 
     public void logout(LogoutRequest request);
+
+
 }

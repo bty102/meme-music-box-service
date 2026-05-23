@@ -13,4 +13,6 @@ public interface RoomAreaRepository extends JpaRepository<RoomArea, Long> {
     List<RoomArea> findByIsActive(Boolean isActive);
 
     boolean existsByAreaNameAndIdIsNot(String areaName, Long id);
+    
+    boolean existsByIdAndIsActive(Long id, Boolean isActive);
 }

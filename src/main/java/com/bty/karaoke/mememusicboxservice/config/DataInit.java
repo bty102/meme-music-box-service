@@ -15,6 +15,9 @@ import com.bty.karaoke.mememusicboxservice.service.RoomAreaService;
 import com.bty.karaoke.mememusicboxservice.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -36,11 +39,24 @@ public class DataInit implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        initRoomAreas();
-        initRooms();
-        initProducts();
-        initPointDiscounts();
-        initAccounts();
+//        try {
+//            var auth = new UsernamePasswordAuthenticationToken(
+//                    "system",
+//                    null,
+//                    List.of(new SimpleGrantedAuthority("ROLE_" + Role.ADMIN.name()))
+//            );
+//
+//            SecurityContextHolder.getContext().setAuthentication(auth);
+//
+//            // Init data
+//            initRoomAreas();
+//            initRooms();
+//            initProducts();
+//            initPointDiscounts();
+//            initAccounts();
+//        } finally {
+//            SecurityContextHolder.clearContext();
+//        }
     }
 
     private void initRoomAreas() {
@@ -301,11 +317,11 @@ public class DataInit implements CommandLineRunner {
                         .build()
         );
 
-        for(Account account : accounts) {
-            if(account.getEmployeeProfile() != null) {
+        for (Account account : accounts) {
+            if (account.getEmployeeProfile() != null) {
                 account.getEmployeeProfile().setAccount(account);
             }
-            if(account.getMemberProfile() != null) {
+            if (account.getMemberProfile() != null) {
                 account.getMemberProfile().setAccount(account);
             }
         }
