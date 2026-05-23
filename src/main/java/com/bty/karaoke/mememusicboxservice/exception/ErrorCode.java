@@ -58,6 +58,13 @@ public enum ErrorCode {
     POINT_DISCOUNT_REQUIRED_POINT_EXISTED(4006, "Required point already exists", HttpStatus.BAD_REQUEST),
     POINT_DISCOUNT_NOT_EXISTED(4007, "Point discount not exists", HttpStatus.BAD_REQUEST),
     POINT_DISCOUNT_DELETION_FAILED(4008, "Point discount deletion is failed", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Auth
+    ACCOUNT_NOT_EXISTED(5001, "Account not exists", HttpStatus.BAD_REQUEST),
+    INCORRECT_PASSWORD(5002, "Incorrect password", HttpStatus.BAD_REQUEST),
+    ACCESSTOKEN_GENERATION_FAILED(5003, "Access token generation is failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    LOGOUT_FAILED(5004, "Logout failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_ACCESSTOKEN(5005, "Access token is invalid", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

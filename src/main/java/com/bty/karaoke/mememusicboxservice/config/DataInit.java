@@ -1,18 +1,26 @@
 package com.bty.karaoke.mememusicboxservice.config;
 
+import com.bty.karaoke.mememusicboxservice.constant.Role;
 import com.bty.karaoke.mememusicboxservice.dto.request.PointDiscountCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.ProductCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomAreaCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
+import com.bty.karaoke.mememusicboxservice.entity.Account;
+import com.bty.karaoke.mememusicboxservice.entity.EmployeeProfile;
+import com.bty.karaoke.mememusicboxservice.entity.MemberProfile;
+import com.bty.karaoke.mememusicboxservice.repository.AccountRepository;
 import com.bty.karaoke.mememusicboxservice.service.PointDiscountService;
 import com.bty.karaoke.mememusicboxservice.service.ProductService;
 import com.bty.karaoke.mememusicboxservice.service.RoomAreaService;
 import com.bty.karaoke.mememusicboxservice.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -23,6 +31,8 @@ public class DataInit implements CommandLineRunner {
     private final RoomService roomService;
     private final ProductService productService;
     private final PointDiscountService pointDiscountService;
+    private final AccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -30,6 +40,7 @@ public class DataInit implements CommandLineRunner {
         initRooms();
         initProducts();
         initPointDiscounts();
+        initAccounts();
     }
 
     private void initRoomAreas() {
@@ -196,45 +207,111 @@ public class DataInit implements CommandLineRunner {
 
     private void initPointDiscounts() {
 
-    List<PointDiscountCreationRequest> pointDiscounts = List.of(
+        List<PointDiscountCreationRequest> pointDiscounts = List.of(
 
-            PointDiscountCreationRequest.builder()
-                    .requiredPoint(100)
-                    .discountPercent(new BigDecimal("5"))
-                    .description("Giảm 5% cho hội viên đạt 100 điểm")
-                    .build(),
+                PointDiscountCreationRequest.builder()
+                        .requiredPoint(100)
+                        .discountPercent(new BigDecimal("5"))
+                        .description("Giảm 5% cho hội viên đạt 100 điểm")
+                        .build(),
 
-            PointDiscountCreationRequest.builder()
-                    .requiredPoint(300)
-                    .discountPercent(new BigDecimal("10"))
-                    .description("Giảm 10% cho hội viên đạt 300 điểm")
-                    .build(),
+                PointDiscountCreationRequest.builder()
+                        .requiredPoint(300)
+                        .discountPercent(new BigDecimal("10"))
+                        .description("Giảm 10% cho hội viên đạt 300 điểm")
+                        .build(),
 
-            PointDiscountCreationRequest.builder()
-                    .requiredPoint(500)
-                    .discountPercent(new BigDecimal("15"))
-                    .description("Giảm 15% cho hội viên đạt 500 điểm")
-                    .build(),
+                PointDiscountCreationRequest.builder()
+                        .requiredPoint(500)
+                        .discountPercent(new BigDecimal("15"))
+                        .description("Giảm 15% cho hội viên đạt 500 điểm")
+                        .build(),
 
-            PointDiscountCreationRequest.builder()
-                    .requiredPoint(1000)
-                    .discountPercent(new BigDecimal("20"))
-                    .description("Giảm 20% cho hội viên đạt 1000 điểm")
-                    .build(),
+                PointDiscountCreationRequest.builder()
+                        .requiredPoint(1000)
+                        .discountPercent(new BigDecimal("20"))
+                        .description("Giảm 20% cho hội viên đạt 1000 điểm")
+                        .build(),
 
-            PointDiscountCreationRequest.builder()
-                    .requiredPoint(2000)
-                    .discountPercent(new BigDecimal("30"))
-                    .description("Giảm 30% cho hội viên VIP đạt 2000 điểm")
-                    .build()
-    );
+                PointDiscountCreationRequest.builder()
+                        .requiredPoint(2000)
+                        .discountPercent(new BigDecimal("30"))
+                        .description("Giảm 30% cho hội viên VIP đạt 2000 điểm")
+                        .build()
+        );
 
-    for (PointDiscountCreationRequest pointDiscount : pointDiscounts) {
-        try {
-            pointDiscountService.createPointDiscount(pointDiscount);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        for (PointDiscountCreationRequest pointDiscount : pointDiscounts) {
+            try {
+                pointDiscountService.createPointDiscount(pointDiscount);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
-}
+
+    private void initAccounts() {
+        List<Account> accounts = List.of(
+                // ADMIN
+                Account.builder()
+                        .email("admin@gmail.com")
+                        .passwordHash(passwordEncoder.encode("admin"))
+                        .role(Role.ADMIN)
+                        .createdAt(LocalDateTime.now())
+                        .isActive(true)
+                        .build(),
+
+                // EMPLOYEE
+                Account.builder()
+                        .email("employee@gmail.com")
+                        .passwordHash(passwordEncoder.encode("employee"))
+                        .role(Role.EMPLOYEE)
+                        .createdAt(LocalDateTime.now())
+                        .isActive(true)
+                        .employeeProfile(
+                                EmployeeProfile.builder()
+                                        .employeeCode("EMP002")
+                                        .fullName("Trần Thị Nhân Viên")
+                                        .phoneNumber("0900000002")
+                                        .nationalId("001203000002")
+                                        .isMale(false)
+                                        .dateOfBirth(LocalDate.of(2000, 5, 10))
+                                        .address("Đà Nẵng")
+                                        .imageUrl(null)
+                                        .build()
+                        )
+                        .build(),
+
+                // MEMBER
+                Account.builder()
+                        .email("member@gmail.com")
+                        .passwordHash(passwordEncoder.encode("member"))
+                        .role(Role.MEMBER)
+                        .createdAt(LocalDateTime.now())
+                        .isActive(true)
+                        .memberProfile(
+                                MemberProfile.builder()
+                                        .memberCode("MEM001")
+                                        .fullName("Lê Văn Hội Viên")
+                                        .isMale(true)
+                                        .dateOfBirth(LocalDate.of(2002, 8, 20))
+                                        .loyaltyPoint(500)
+                                        .imageUrl(null)
+                                        .build()
+                        )
+                        .build()
+        );
+
+        for(Account account : accounts) {
+            if(account.getEmployeeProfile() != null) {
+                account.getEmployeeProfile().setAccount(account);
+            }
+            if(account.getMemberProfile() != null) {
+                account.getMemberProfile().setAccount(account);
+            }
+        }
+
+        for (Account account : accounts) {
+            accountRepository.save(account);
+        }
+    }
 }
