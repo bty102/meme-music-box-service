@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,5 +84,18 @@ public class RoomController {
         return ResponseEntity.ok(ApiResponse.<Page<RoomResponse>>builder()
                 .result(response)
                 .build());
+    }
+
+    @GetMapping(path = "/open", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> openRoom(
+            @RequestParam(name = "roomId", required = true) Long roomId,
+            @RequestParam(name = "memberAccId", required = false) Long memberAccountId,
+            @AuthenticationPrincipal Jwt jwt
+            ) {
+        Long creatorAccountId = Long.parseLong(jwt.getClaims().get("accId").toString());
+        roomService.openRoom(roomId, creatorAccountId, memberAccountId);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder().build()
+        );
     }
 }

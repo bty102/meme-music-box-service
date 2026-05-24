@@ -1,6 +1,8 @@
 package com.bty.karaoke.mememusicboxservice.config;
 
+import com.bty.karaoke.mememusicboxservice.constant.DefaultSystemConfig;
 import com.bty.karaoke.mememusicboxservice.constant.Role;
+import com.bty.karaoke.mememusicboxservice.constant.SystemConfigDataType;
 import com.bty.karaoke.mememusicboxservice.dto.request.PointDiscountCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.ProductCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomAreaCreationRequest;
@@ -8,7 +10,9 @@ import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
 import com.bty.karaoke.mememusicboxservice.entity.Account;
 import com.bty.karaoke.mememusicboxservice.entity.EmployeeProfile;
 import com.bty.karaoke.mememusicboxservice.entity.MemberProfile;
+import com.bty.karaoke.mememusicboxservice.entity.SystemConfig;
 import com.bty.karaoke.mememusicboxservice.repository.AccountRepository;
+import com.bty.karaoke.mememusicboxservice.repository.SystemConfigRepository;
 import com.bty.karaoke.mememusicboxservice.service.PointDiscountService;
 import com.bty.karaoke.mememusicboxservice.service.ProductService;
 import com.bty.karaoke.mememusicboxservice.service.RoomAreaService;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -36,27 +41,46 @@ public class DataInit implements CommandLineRunner {
     private final PointDiscountService pointDiscountService;
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SystemConfigRepository systemConfigRepository;
 
     @Override
     public void run(String... args) throws Exception {
-//        try {
-//            var auth = new UsernamePasswordAuthenticationToken(
-//                    "system",
-//                    null,
-//                    List.of(new SimpleGrantedAuthority("ROLE_" + Role.ADMIN.name()))
-//            );
-//
-//            SecurityContextHolder.getContext().setAuthentication(auth);
-//
-//            // Init data
-//            initRoomAreas();
-//            initRooms();
-//            initProducts();
-//            initPointDiscounts();
-//            initAccounts();
-//        } finally {
-//            SecurityContextHolder.clearContext();
-//        }
+        try {
+            var auth = new UsernamePasswordAuthenticationToken(
+                    "system",
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + Role.ADMIN.name()))
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            // Default system configs
+            defaultSystemConfig();
+
+            // Init data
+            initRoomAreas();
+            initRooms();
+            initProducts();
+            initPointDiscounts();
+            initAccounts();
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    private void defaultSystemConfig() {
+        List<SystemConfig> systemConfigs = new ArrayList<>();
+        for(DefaultSystemConfig config : DefaultSystemConfig.values()) {
+            systemConfigs.add(
+                    SystemConfig.builder()
+                            .configKey(config.getConfigKey())
+                            .configValue(config.getConfigValue())
+                            .dataType(config.getDataType())
+                            .description(config.getDescription())
+                            .build()
+            );
+        }
+        systemConfigRepository.saveAll(systemConfigs);
     }
 
     private void initRoomAreas() {

@@ -1,17 +1,27 @@
 package com.bty.karaoke.mememusicboxservice.service.impl;
 
+import com.bty.karaoke.mememusicboxservice.constant.RoomBookingStatus;
 import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
+import com.bty.karaoke.mememusicboxservice.dto.request.InvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.RoomOfInvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomUpdateRequest;
+import com.bty.karaoke.mememusicboxservice.dto.response.InvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.RoomResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Room;
 import com.bty.karaoke.mememusicboxservice.entity.RoomArea;
+import com.bty.karaoke.mememusicboxservice.entity.RoomBooking;
 import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.RoomMapper;
 import com.bty.karaoke.mememusicboxservice.repository.RoomAreaRepository;
+import com.bty.karaoke.mememusicboxservice.repository.RoomBookingRepository;
+import com.bty.karaoke.mememusicboxservice.repository.RoomOfInvoiceRepository;
 import com.bty.karaoke.mememusicboxservice.repository.RoomRepository;
+import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
+import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
 import com.bty.karaoke.mememusicboxservice.service.RoomService;
+import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,7 +29,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +44,10 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final RoomAreaRepository roomAreaRepository;
     private final RoomMapper roomMapper;
+    private final RoomBookingRepository roomBookingRepository;
+    private final SystemConfigService systemConfigService;
+    private final InvoiceService invoiceService;
+    private final RoomOfInvoiceService roomOfInvoiceService;
 
     @Override
     public RoomResponse createRoom(@Valid RoomCreationRequest request) {
@@ -169,5 +188,57 @@ public class RoomServiceImpl implements RoomService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Room> roomPage = roomRepository.findByRoomNumberAndIsActiveOrCapacityAndIsActive(roomNumber, isActive, capacity, isActive,pageable);
         return roomPage.map(room -> roomMapper.toRoomResponse(room));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void openRoom(Long roomId, Long creatorAccountId, Long memberAccountId) {
+        if(roomId == null) {
+            throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
+        }
+
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
+
+        if(!room.getIsActive()) {
+            throw new AppException(ErrorCode.ROOM_NOT_ACTIVE);
+        }
+
+        if(room.getStatus().equals(RoomStatus.IN_USE) || room.getStatus().equals(RoomStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.ROOM_STATUS_INVALID_TO_OPEN_ROOM);
+        }
+
+        if(room.getStatus().equals(RoomStatus.BOOKED)) {
+            RoomBooking roomBooking = roomBookingRepository.findFirstByRoomIdAndStatusOrderByBookingTimeAsc(roomId, RoomBookingStatus.PENDING)
+                    .get();
+
+            if(!roomBooking.getBookingTime().isAfter(LocalDateTime.now())) {
+                throw new AppException(ErrorCode.CURRENT_TIME_INVALID_TO_OPEN_ROOM);
+            }
+
+            int minimumMinutesBeforeReservation = systemConfigService.getMinimumMinutesBeforeReservation();
+
+            if(Duration.between(LocalDateTime.now(), roomBooking.getBookingTime()).toMinutes()
+                <= minimumMinutesBeforeReservation
+            ) {
+                throw new AppException(ErrorCode.CURRENT_TIME_INVALID_TO_OPEN_ROOM);
+            }
+        }
+
+        // Mo phong duoc roi
+
+        InvoiceResponse invoiceResponse = invoiceService.createInvoice(
+                InvoiceCreationRequest.builder()
+                        .creatorAccountId(creatorAccountId)
+                        .memberAccountId(memberAccountId)
+                        .build()
+        );
+
+        roomOfInvoiceService.createRoomOfInvoice(
+                RoomOfInvoiceCreationRequest.builder()
+                        .roomId(roomId)
+                        .invoiceId(invoiceResponse.getId())
+                        .build()
+        );
     }
 }

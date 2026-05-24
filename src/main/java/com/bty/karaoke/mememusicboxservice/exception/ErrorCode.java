@@ -32,6 +32,9 @@ public enum ErrorCode {
     ROOM_NOT_EXISTED(2009, "Room not exists", HttpStatus.BAD_REQUEST),
     ROOM_ACTIVE_STATE_NULL(2010, "Room active state must be not null", HttpStatus.BAD_REQUEST),
     ROOM_STATUS_NOT_AVAILABLE(2011, "Room status not available", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_ACTIVE(2012, "Room not active", HttpStatus.BAD_REQUEST),
+    CURRENT_TIME_INVALID_TO_OPEN_ROOM(2013, "Current time is invalid to open room", HttpStatus.BAD_REQUEST),
+    ROOM_STATUS_INVALID_TO_OPEN_ROOM(2014, "Room status is invalid to open room", HttpStatus.BAD_REQUEST),
 
     // Product
     PRODUCT_CODE_NULL(3001, "Product code must be not null", HttpStatus.BAD_REQUEST),
@@ -65,6 +68,26 @@ public enum ErrorCode {
     ACCESSTOKEN_GENERATION_FAILED(5003, "Access token generation is failed", HttpStatus.INTERNAL_SERVER_ERROR),
     LOGOUT_FAILED(5004, "Logout failed", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_ACCESSTOKEN(5005, "Access token is invalid", HttpStatus.BAD_REQUEST),
+
+    // Invoice
+    INVOICE_DISCOUNT_PERCENT_NULL(6001, "Invoice discount percent must be not null", HttpStatus.BAD_REQUEST),
+    INVOICE_DISCOUNT_PERCENT_IN_INVALID_RANGE(6002, "Invoice discount percent must be between 0 and 100", HttpStatus.BAD_REQUEST),
+    INVOICE_VAT_PERCENT_NULL(6003, "Invoice vat percent must be not null", HttpStatus.BAD_REQUEST),
+    INVOICE_VAT_PERCENT_IN_INVALID_RANGE(6004, "Invoice VAT percent must be between 0 and 100", HttpStatus.BAD_REQUEST),
+    INVOICE_CREATOR_NULL(6005, "Invoice creator must be not null", HttpStatus.BAD_REQUEST),
+    INVOICE_NOT_EXISTED(6006, "Invoice not exists", HttpStatus.BAD_REQUEST),
+
+    // Account
+    ACCOUNT_NOT_ACTIVE(7001, "Account is not active", HttpStatus.BAD_REQUEST),
+    ACCOUNT_NOT_MEMBER(7002, "Account is not member", HttpStatus.BAD_REQUEST),
+
+    // SystemConfig
+    DEFAULT_SYSTEM_CONFIG_NOT_CREATED(8001, "Default system config is not created", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // RoomOfInvoce
+    ROOM_STATUS_NOT_VALID_TO_CREATE_ROOM_OF_INVOICE(9001, "Room status is not valid to create room of invoice", HttpStatus.BAD_REQUEST),
+    ROOM_OF_INVOICE_EXISTED(9002, "Room of invoice already exists", HttpStatus.BAD_REQUEST),
+    EXISTING_ROOM_OF_INVOICE_NOT_TRANSFERRED(9003, "Existing room of invoice not transferred", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

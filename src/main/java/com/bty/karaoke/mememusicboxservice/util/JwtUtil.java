@@ -72,6 +72,7 @@ public class JwtUtil {
                         Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(account))
+                .claim("accId", account.getId())
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());

@@ -61,4 +61,11 @@ public interface RoomService {
      */
     @PreAuthorize("#isActive == true or hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())")
     public Page<RoomResponse> findRoomsByRoomNumberOrCapacity(Integer roomNumber, Integer  capacity, Boolean isActive, int pageNumber, int pageSize);
+
+    @PreAuthorize("""
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
+    public void openRoom(Long roomId, Long creatorAccountId, Long memberAccountId);
 }
