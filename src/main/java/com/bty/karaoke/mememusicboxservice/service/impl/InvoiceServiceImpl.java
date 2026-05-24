@@ -1,6 +1,7 @@
 package com.bty.karaoke.mememusicboxservice.service.impl;
 
 import com.bty.karaoke.mememusicboxservice.constant.InvoiceStatus;
+import com.bty.karaoke.mememusicboxservice.constant.Role;
 import com.bty.karaoke.mememusicboxservice.dto.request.InvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.InvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Account;
@@ -72,6 +73,56 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setDiscountAmount(null);
         invoice.setVatAmount(null);
         invoice.setFinalAmount(null);
+        invoice = invoiceRepository.save(invoice);
+        return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
+    @Override
+    public InvoiceResponse updateMemberOfInvoice(Long invoiceId, Long memberAccountId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE);
+        }
+
+        if(memberAccountId == null) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
+        }
+        Account account = accountRepository.findById(memberAccountId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+        if(!account.getIsActive()) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
+        }
+        if(!account.getRole().equals(Role.MEMBER)) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_MEMBER);
+        }
+
+        invoice.setMemberAccount(account);
+        invoice.setDiscountPercent(accountService.getDiscountPercentByMemberAccountId(memberAccountId));
+        invoice = invoiceRepository.save(invoice);
+        return invoiceMapper.toInvoiceResponse(invoice);
+
+    }
+
+    @Override
+    public InvoiceResponse deleteMemberOfInvoice(Long invoiceId) {
+
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE);
+        }
+
+        invoice.setMemberAccount(null);
+        invoice.setDiscountPercent(BigDecimal.ZERO);
         invoice = invoiceRepository.save(invoice);
         return invoiceMapper.toInvoiceResponse(invoice);
     }

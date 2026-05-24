@@ -76,6 +76,7 @@ public enum ErrorCode {
     INVOICE_VAT_PERCENT_IN_INVALID_RANGE(6004, "Invoice VAT percent must be between 0 and 100", HttpStatus.BAD_REQUEST),
     INVOICE_CREATOR_NULL(6005, "Invoice creator must be not null", HttpStatus.BAD_REQUEST),
     INVOICE_NOT_EXISTED(6006, "Invoice not exists", HttpStatus.BAD_REQUEST),
+    INVOICE_STATUS_INVALID_TO_UPDATE(6007, "Invoice status is invalid to update", HttpStatus.BAD_REQUEST),
 
     // Account
     ACCOUNT_NOT_ACTIVE(7001, "Account is not active", HttpStatus.BAD_REQUEST),
@@ -88,6 +89,14 @@ public enum ErrorCode {
     ROOM_STATUS_NOT_VALID_TO_CREATE_ROOM_OF_INVOICE(9001, "Room status is not valid to create room of invoice", HttpStatus.BAD_REQUEST),
     ROOM_OF_INVOICE_EXISTED(9002, "Room of invoice already exists", HttpStatus.BAD_REQUEST),
     EXISTING_ROOM_OF_INVOICE_NOT_TRANSFERRED(9003, "Existing room of invoice not transferred", HttpStatus.BAD_REQUEST),
+
+    // ProductOfInvoice
+    PRODUCT_OF_INVOICE_QUANTITY_NULL(10001, "Product quantity in invoice must be not null", HttpStatus.BAD_REQUEST),
+    PRODUCT_OF_INVOICE_QUANTITY_IN_INVALID_RANGE(10002, "Product quantity in invoice must be greater than or equal 0", HttpStatus.BAD_REQUEST),
+    INVOICE_STATUS_INVALID_TO_CREATE_PRODUCT_OF_INVOICE(10003, "Invoice status is invalid to create product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_ACTIVE_TO_CREATE_PRODUCT_OF_INVOICE(10003, "Product not active to create product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_STOCK_QUANTITY_NOT_ENOUGH_TO_CREATE_PRODUCT_OF_INVOICE(10004, "Product stock quantity not enough to create product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_OF_INVOICE_EXISTED(10005, "Product of invoice already exists", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
