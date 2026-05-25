@@ -2,6 +2,7 @@ package com.bty.karaoke.mememusicboxservice.service.impl;
 
 import com.bty.karaoke.mememusicboxservice.constant.InvoiceStatus;
 import com.bty.karaoke.mememusicboxservice.dto.request.ProductOfInvoiceCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.ProductOfInvoiceUpdateRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.ProductOfInvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Invoice;
 import com.bty.karaoke.mememusicboxservice.entity.Product;
@@ -66,6 +67,49 @@ public class ProductOfInvoiceServiceImpl implements ProductOfInvoiceService {
         product.setStockQuantity(product.getStockQuantity() - request.getQuantity());
         productRepository.save(product);
 
+        return productOfInvoiceMapper.toProductOfInvoiceResponse(productOfInvoice);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductOfInvoiceResponse updateProductOfInvoice(Long id, @Valid ProductOfInvoiceUpdateRequest request) {
+        if (id == null) {
+            throw new AppException(ErrorCode.PRODUCT_OF_INVOICE_NOT_EXISTED);
+        }
+        ProductOfInvoice productOfInvoice = productOfInvoiceRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_OF_INVOICE_NOT_EXISTED));
+
+        if(!productOfInvoice.getInvoice().getStatus().equals(InvoiceStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE_PRODUCT_OF_INVOICE);
+        }
+
+        Integer currentQuantity = productOfInvoice.getQuantity();
+
+        Product product = productOfInvoice.getProduct();
+
+        if(!product.getIsActive()) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_ACTIVE_TO_UPDATE_PRODUCT_OF_INVOICE);
+        }
+
+        if(currentQuantity < request.getQuantity()) {
+            Integer additionalQuantity = request.getQuantity() - currentQuantity;
+            if(product.getStockQuantity() < additionalQuantity) {
+                throw new AppException(ErrorCode.PRODUCT_STOCK_QUANTITY_NOT_ENOUGH_TO_UPDATE_PRODUCT_OF_INVOICE);
+            }
+            product.setStockQuantity(product.getStockQuantity() - additionalQuantity);
+        }
+
+        if(currentQuantity > request.getQuantity()) {
+            Integer reducedQuantity = currentQuantity - request.getQuantity();
+            product.setStockQuantity(product.getStockQuantity() + reducedQuantity);
+        }
+
+        productRepository.save(product);
+
+        productOfInvoiceMapper.updateProductOfInvoice(productOfInvoice, request);
+        BigDecimal lineTotal = product.getUnitPrice().multiply(new BigDecimal(request.getQuantity()));
+        productOfInvoice.setLineTotal(lineTotal);
+        productOfInvoice = productOfInvoiceRepository.save(productOfInvoice);
         return productOfInvoiceMapper.toProductOfInvoiceResponse(productOfInvoice);
     }
 }

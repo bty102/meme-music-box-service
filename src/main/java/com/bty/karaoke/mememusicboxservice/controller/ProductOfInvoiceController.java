@@ -1,6 +1,7 @@
 package com.bty.karaoke.mememusicboxservice.controller;
 
 import com.bty.karaoke.mememusicboxservice.dto.request.ProductOfInvoiceCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.ProductOfInvoiceUpdateRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.ApiResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.ProductOfInvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.service.ProductOfInvoiceService;
@@ -8,10 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/productOfInvoice")
@@ -29,5 +27,16 @@ public class ProductOfInvoiceController {
                 .body(ApiResponse.<ProductOfInvoiceResponse>builder()
                         .result(response)
                         .build());
+    }
+
+    @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<ProductOfInvoiceResponse>> updateProductOfInvoice(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody ProductOfInvoiceUpdateRequest request
+    ) {
+        var response = productOfInvoiceService.updateProductOfInvoice(id, request);
+        return ResponseEntity.ok(ApiResponse.<ProductOfInvoiceResponse>builder()
+                .result(response)
+                .build());
     }
 }

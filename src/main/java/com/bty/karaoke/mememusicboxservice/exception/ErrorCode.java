@@ -94,9 +94,13 @@ public enum ErrorCode {
     PRODUCT_OF_INVOICE_QUANTITY_NULL(10001, "Product quantity in invoice must be not null", HttpStatus.BAD_REQUEST),
     PRODUCT_OF_INVOICE_QUANTITY_IN_INVALID_RANGE(10002, "Product quantity in invoice must be greater than or equal 0", HttpStatus.BAD_REQUEST),
     INVOICE_STATUS_INVALID_TO_CREATE_PRODUCT_OF_INVOICE(10003, "Invoice status is invalid to create product of invoice", HttpStatus.BAD_REQUEST),
-    PRODUCT_NOT_ACTIVE_TO_CREATE_PRODUCT_OF_INVOICE(10003, "Product not active to create product of invoice", HttpStatus.BAD_REQUEST),
-    PRODUCT_STOCK_QUANTITY_NOT_ENOUGH_TO_CREATE_PRODUCT_OF_INVOICE(10004, "Product stock quantity not enough to create product of invoice", HttpStatus.BAD_REQUEST),
-    PRODUCT_OF_INVOICE_EXISTED(10005, "Product of invoice already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_ACTIVE_TO_CREATE_PRODUCT_OF_INVOICE(10004, "Product not active to create product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_STOCK_QUANTITY_NOT_ENOUGH_TO_CREATE_PRODUCT_OF_INVOICE(10005, "Product stock quantity not enough to create product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_OF_INVOICE_EXISTED(10006, "Product of invoice already exists", HttpStatus.BAD_REQUEST),
+    PRODUCT_OF_INVOICE_NOT_EXISTED(10007, "Product of invoice not exists", HttpStatus.BAD_REQUEST),
+    INVOICE_STATUS_INVALID_TO_UPDATE_PRODUCT_OF_INVOICE(10008, "Invoice status is invalid to update product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_STOCK_QUANTITY_NOT_ENOUGH_TO_UPDATE_PRODUCT_OF_INVOICE(10009, "Product stock quantity not enough to update product of invoice", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_ACTIVE_TO_UPDATE_PRODUCT_OF_INVOICE(10010, "Product not active to update product of invoice", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
