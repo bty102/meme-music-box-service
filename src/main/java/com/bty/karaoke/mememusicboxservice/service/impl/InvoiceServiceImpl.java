@@ -269,6 +269,41 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void paymentConfirmation(Long invoiceId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        if(!invoice.getStatus().equals(InvoiceStatus.UNPAID)) {
+            throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_CONFIRM_PAYMENT);
+        }
+
+        invoice.setStatus(InvoiceStatus.PAID);
+        invoiceRepository.save(invoice);
+    }
+
+    @Override
+    public InvoiceResponse getTemporaryInvoiceOfRoom(Long roomId) {
+        if(roomId == null) {
+            throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
+        }
+
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
+
+        RoomOfInvoice roomOfInvoice = roomOfInvoiceRepository
+                .findByRoom_IdAndInvoice_StatusAndIsTransferred(roomId, InvoiceStatus.TEMPORARY, false)
+                .orElseThrow(() -> new AppException(ErrorCode.TEMPORARY_INVOICE_OF_ROOM_NOT_FOUND));
+
+        Invoice invoice = roomOfInvoice.getInvoice();
+        return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
     private String generateInvoiceCode() {
 
         String datePart = LocalDate.now()

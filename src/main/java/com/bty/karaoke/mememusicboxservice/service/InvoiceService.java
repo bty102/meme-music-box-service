@@ -37,4 +37,18 @@ public interface InvoiceService {
                 hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
             """)
     public void checkOut(Long invoiceId);
+
+    @PreAuthorize("""
+                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+                or
+                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+            """)
+    public void paymentConfirmation(Long invoiceId);
+
+    @PreAuthorize("""
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
+    public InvoiceResponse getTemporaryInvoiceOfRoom(Long roomId);
 }

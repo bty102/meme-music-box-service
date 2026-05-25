@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     boolean existsByIdAndCreatedByAccount_Email(Long id, String createdByAccountEmail);
+
+    boolean existsByIdAndMemberAccount_Email(Long id, String memberAccountEmail);
 }

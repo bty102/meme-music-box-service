@@ -60,4 +60,27 @@ public class InvoiceController {
                 ApiResponse.<Void>builder().build()
         );
     }
+
+    @GetMapping(path = "/paymentConfirmation", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> paymentConfirmation(
+       @RequestParam(name = "invoiceId", required = true) Long invoiceId
+    ) {
+        invoiceService.paymentConfirmation(invoiceId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder().build()
+        );
+    }
+
+    @GetMapping(path = "/temporary", produces = "application/json")
+    public ResponseEntity<ApiResponse<InvoiceResponse>> temporaryInvoice(
+            @RequestParam(name = "roomId", required = true) Long roomId
+    ) {
+        var response = invoiceService.getTemporaryInvoiceOfRoom(roomId);
+        return ResponseEntity.ok(
+                ApiResponse.<InvoiceResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
 }

@@ -11,13 +11,11 @@ import com.bty.karaoke.mememusicboxservice.dto.response.RoomResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Room;
 import com.bty.karaoke.mememusicboxservice.entity.RoomArea;
 import com.bty.karaoke.mememusicboxservice.entity.RoomBooking;
+import com.bty.karaoke.mememusicboxservice.entity.RoomOfInvoice;
 import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.RoomMapper;
-import com.bty.karaoke.mememusicboxservice.repository.RoomAreaRepository;
-import com.bty.karaoke.mememusicboxservice.repository.RoomBookingRepository;
-import com.bty.karaoke.mememusicboxservice.repository.RoomOfInvoiceRepository;
-import com.bty.karaoke.mememusicboxservice.repository.RoomRepository;
+import com.bty.karaoke.mememusicboxservice.repository.*;
 import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
 import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
 import com.bty.karaoke.mememusicboxservice.service.RoomService;
@@ -48,6 +46,8 @@ public class RoomServiceImpl implements RoomService {
     private final SystemConfigService systemConfigService;
     private final InvoiceService invoiceService;
     private final RoomOfInvoiceService roomOfInvoiceService;
+    private final InvoiceRepository invoiceRepository;
+    private final RoomOfInvoiceRepository roomOfInvoiceRepository;
 
     @Override
     public RoomResponse createRoom(@Valid RoomCreationRequest request) {
@@ -241,4 +241,5 @@ public class RoomServiceImpl implements RoomService {
                         .build()
         );
     }
+
 }

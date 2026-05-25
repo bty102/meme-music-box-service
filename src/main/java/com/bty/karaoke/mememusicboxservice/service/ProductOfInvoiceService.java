@@ -7,6 +7,8 @@ import com.bty.karaoke.mememusicboxservice.entity.ProductOfInvoice;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+
 public interface ProductOfInvoiceService {
 
     @PreAuthorize("""
@@ -22,4 +24,13 @@ public interface ProductOfInvoiceService {
                 hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
             """)
     public ProductOfInvoiceResponse updateProductOfInvoice(Long id, @Valid ProductOfInvoiceUpdateRequest request);
+
+    @PreAuthorize("""
+        @invoiceRepository.existsByIdAndMemberAccount_Email(#invoiceId, authentication.principal.getSubject())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
+    public List<ProductOfInvoiceResponse> getProductsOfInvoice(Long invoiceId);
 }

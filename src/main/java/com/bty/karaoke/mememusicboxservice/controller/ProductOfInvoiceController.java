@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/productOfInvoice")
 @RequiredArgsConstructor
@@ -38,5 +40,17 @@ public class ProductOfInvoiceController {
         return ResponseEntity.ok(ApiResponse.<ProductOfInvoiceResponse>builder()
                 .result(response)
                 .build());
+    }
+
+    @GetMapping(path = "", produces = "application/json")
+    public ResponseEntity<ApiResponse<List<ProductOfInvoiceResponse>>> getProductsOfInvoiceByInvoiceId(
+            @RequestParam(name = "invoiceId", required = true) Long invoiceId
+    ) {
+        var response = productOfInvoiceService.getProductsOfInvoice(invoiceId);
+        return ResponseEntity.ok(
+                ApiResponse.<List<ProductOfInvoiceResponse>>builder()
+                        .result(response)
+                        .build()
+        );
     }
 }

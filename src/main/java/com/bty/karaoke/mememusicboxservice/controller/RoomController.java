@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class RoomController {
             @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize
     ) {
         Page<RoomResponse> response = null;
-        if(isActive == null)
+        if (isActive == null)
             response = roomService.findRoomsByAreaId(areaId, pageNumber, pageSize);
         else
             response = roomService.findRoomsByAreaId(areaId, isActive, pageNumber, pageSize);
@@ -77,7 +79,7 @@ public class RoomController {
             @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize
     ) {
         Page<RoomResponse> response = null;
-        if(isActive == null) {
+        if (isActive == null) {
             response = roomService.findRoomsByRoomNumberOrCapacity(query, query, pageNumber, pageSize);
         } else
             response = roomService.findRoomsByRoomNumberOrCapacity(query, query, isActive, pageNumber, pageSize);
@@ -91,11 +93,12 @@ public class RoomController {
             @RequestParam(name = "roomId", required = true) Long roomId,
             @RequestParam(name = "memberAccId", required = false) Long memberAccountId,
             @AuthenticationPrincipal Jwt jwt
-            ) {
+    ) {
         Long creatorAccountId = Long.parseLong(jwt.getClaims().get("accId").toString());
         roomService.openRoom(roomId, creatorAccountId, memberAccountId);
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder().build()
         );
     }
+
 }

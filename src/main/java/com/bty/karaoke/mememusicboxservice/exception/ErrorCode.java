@@ -82,6 +82,8 @@ public enum ErrorCode {
     INVOICE_STATUS_INVALID_TO_TRANSFER_TO_ROOM(6008, "Invoice status is invalid to transfer to room", HttpStatus.BAD_REQUEST),
     ROOM_CAPACITY_NOT_ENOUGH_TO_TRANSFER_TO(6009, "Room capacity not enough to transfer to", HttpStatus.BAD_REQUEST),
     INVOICE_STATUS_INVALID_TO_CHECK_OUT(6011, "Invoice status is invalid to check out", HttpStatus.BAD_REQUEST),
+    INVOICE_STATUS_INVALID_TO_CONFIRM_PAYMENT(6012, "Invoice status is invalid to confirm payment", HttpStatus.BAD_REQUEST),
+    TEMPORARY_INVOICE_OF_ROOM_NOT_FOUND(6013, "Temporary invoice of room not found", HttpStatus.BAD_REQUEST),
 
     // Account
     ACCOUNT_NOT_ACTIVE(7001, "Account is not active", HttpStatus.BAD_REQUEST),

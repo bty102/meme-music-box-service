@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -111,5 +112,22 @@ public class ProductOfInvoiceServiceImpl implements ProductOfInvoiceService {
         productOfInvoice.setLineTotal(lineTotal);
         productOfInvoice = productOfInvoiceRepository.save(productOfInvoice);
         return productOfInvoiceMapper.toProductOfInvoiceResponse(productOfInvoice);
+    }
+
+    @Override
+    public List<ProductOfInvoiceResponse> getProductsOfInvoice(Long invoiceId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+        if(!invoiceRepository.existsById(invoiceId)) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        List<ProductOfInvoice> productOfInvoiceList = productOfInvoiceRepository
+                .findByInvoice_Id(invoiceId);
+
+        return productOfInvoiceList.stream()
+                .map(productOfInvoice -> productOfInvoiceMapper.toProductOfInvoiceResponse(productOfInvoice))
+                .toList();
     }
 }

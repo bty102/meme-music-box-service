@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+
 public interface RoomService {
 
     @PreAuthorize("hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())")
@@ -68,4 +70,6 @@ public interface RoomService {
         hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
     """)
     public void openRoom(Long roomId, Long creatorAccountId, Long memberAccountId);
+
+
 }

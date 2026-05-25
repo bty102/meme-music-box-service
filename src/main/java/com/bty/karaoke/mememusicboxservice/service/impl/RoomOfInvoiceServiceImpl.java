@@ -3,6 +3,7 @@ package com.bty.karaoke.mememusicboxservice.service.impl;
 import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomOfInvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.RoomOfInvoiceResponse;
+import com.bty.karaoke.mememusicboxservice.dto.response.RoomResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Invoice;
 import com.bty.karaoke.mememusicboxservice.entity.Room;
 import com.bty.karaoke.mememusicboxservice.entity.RoomOfInvoice;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -73,5 +75,24 @@ public class RoomOfInvoiceServiceImpl implements RoomOfInvoiceService {
         }
         roomRepository.save(room);
         return roomOfInvoiceMapper.toRoomOfInvoiceResponse(roomOfInvoice);
+    }
+
+
+    @Override
+    public List<RoomOfInvoiceResponse> getRoomsOfInvoice(Long invoiceId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        if(!invoiceRepository.existsById(invoiceId)) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        List<RoomOfInvoice> roomOfInvoiceList = roomOfInvoiceRepository
+                .findByInvoice_Id(invoiceId);
+
+        return roomOfInvoiceList.stream()
+                .map(roomOfInvoice -> roomOfInvoiceMapper.toRoomOfInvoiceResponse(roomOfInvoice))
+                .toList();
     }
 }
