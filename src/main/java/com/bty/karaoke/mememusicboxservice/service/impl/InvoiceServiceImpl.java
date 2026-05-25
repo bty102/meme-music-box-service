@@ -225,6 +225,50 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void checkOut(Long invoiceId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_CHECK_OUT);
+        }
+
+        // Check out thoi
+        RoomOfInvoice roomOfInvoice = roomOfInvoiceRepository.findByInvoice_IdAndIsTransferred(invoiceId, false)
+                .get();
+
+        Room currentRoom = roomOfInvoice.getRoom();
+
+
+        roomOfInvoice.setCheckOutAt(LocalDateTime.now());
+        long minutes = Duration.between(roomOfInvoice.getCheckInAt(), roomOfInvoice.getCheckOutAt()).toMinutes();
+        roomOfInvoice.setDurationHours(BigDecimal.valueOf(minutes)
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP));
+        roomOfInvoice.setRoomCharge(roomOfInvoice.getDurationHours().multiply(roomOfInvoice.getRoom().getHourlyRate())
+                .setScale(0, RoundingMode.HALF_UP));
+        roomOfInvoiceRepository.save(roomOfInvoice);
+
+        if(currentRoom.getStatus().equals(RoomStatus.IN_USE)) {
+            currentRoom.setStatus(RoomStatus.AVAILABLE);
+        }
+        if(currentRoom.getStatus().equals(RoomStatus.TEMPORARY)) {
+            currentRoom.setStatus(RoomStatus.BOOKED);
+        }
+        roomRepository.save(currentRoom);
+
+
+        invoice.calculateAmounts();
+        invoice.setStatus(InvoiceStatus.UNPAID);
+        invoiceRepository.save(invoice);
+
+    }
+
     private String generateInvoiceCode() {
 
         String datePart = LocalDate.now()

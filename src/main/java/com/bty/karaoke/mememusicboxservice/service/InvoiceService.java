@@ -30,4 +30,11 @@ public interface InvoiceService {
                 hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
             """)
     public void transferRoomOfInvoice(Long invoiceId, Long transferToRoomId);
+
+    @PreAuthorize("""
+                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+                or
+                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+            """)
+    public void checkOut(Long invoiceId);
 }

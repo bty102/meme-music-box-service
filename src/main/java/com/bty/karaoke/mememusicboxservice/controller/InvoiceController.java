@@ -49,4 +49,15 @@ public class InvoiceController {
                 ApiResponse.<Void>builder().build()
         );
     }
+
+    @GetMapping(path = "/checkOut", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> checkOut(
+            @RequestParam(name = "invoiceId", required = true) Long invoiceId
+    ) {
+        invoiceService.checkOut(invoiceId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder().build()
+        );
+    }
 }
