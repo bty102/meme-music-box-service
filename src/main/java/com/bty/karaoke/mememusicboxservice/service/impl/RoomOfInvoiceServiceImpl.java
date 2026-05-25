@@ -47,9 +47,9 @@ public class RoomOfInvoiceServiceImpl implements RoomOfInvoiceService {
         Invoice invoice = invoiceRepository.findById(request.getInvoiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
-        if(roomOfInvoiceRepository.existsByRoom_IdAndInvoice_Id(request.getRoomId(), request.getInvoiceId())) {
-            throw new AppException(ErrorCode.ROOM_OF_INVOICE_EXISTED);
-        }
+//        if(roomOfInvoiceRepository.existsByRoom_IdAndInvoice_Id(request.getRoomId(), request.getInvoiceId())) {
+//            throw new AppException(ErrorCode.ROOM_OF_INVOICE_EXISTED);
+//        }
 
         if(roomOfInvoiceRepository.existsByInvoice_IdAndIsTransferred(request.getInvoiceId(), false)) {
             throw new AppException(ErrorCode.EXISTING_ROOM_OF_INVOICE_NOT_TRANSFERRED);

@@ -29,7 +29,7 @@ public class InvoiceController {
                 .build());
     }
 
-    @GetMapping(path = "deleteMember", produces = "application/json")
+    @GetMapping(path = "/deleteMember", produces = "application/json")
     public ResponseEntity<ApiResponse<InvoiceResponse>> deleteMemberOfInvoice(
             @RequestParam(name = "invoiceId", required = true) Long invoiceId
     ) {
@@ -37,5 +37,16 @@ public class InvoiceController {
         return ResponseEntity.ok(ApiResponse.<InvoiceResponse>builder()
                 .result(response)
                 .build());
+    }
+
+    @GetMapping(path = "/transferToRoom", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> transferToRoom(
+            @RequestParam(name = "invoiceId", required = true) Long invoiceId,
+            @RequestParam(name = "roomId", required = true) Long roomId
+    ) {
+        invoiceService.transferRoomOfInvoice(invoiceId, roomId);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder().build()
+        );
     }
 }

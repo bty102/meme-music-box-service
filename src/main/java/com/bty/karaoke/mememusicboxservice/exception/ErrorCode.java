@@ -35,6 +35,8 @@ public enum ErrorCode {
     ROOM_NOT_ACTIVE(2012, "Room not active", HttpStatus.BAD_REQUEST),
     CURRENT_TIME_INVALID_TO_OPEN_ROOM(2013, "Current time is invalid to open room", HttpStatus.BAD_REQUEST),
     ROOM_STATUS_INVALID_TO_OPEN_ROOM(2014, "Room status is invalid to open room", HttpStatus.BAD_REQUEST),
+    ROOM_STATUS_INVALID_TO_TRANSFER_TO(2015, "Room status is invalid to transfer to", HttpStatus.BAD_REQUEST),
+    CURRENT_TIME_INVALID_TO_TRANSFER_TO_ROOM(2016, "Current time is invalid to transfer to room", HttpStatus.BAD_REQUEST),
 
     // Product
     PRODUCT_CODE_NULL(3001, "Product code must be not null", HttpStatus.BAD_REQUEST),
@@ -77,6 +79,8 @@ public enum ErrorCode {
     INVOICE_CREATOR_NULL(6005, "Invoice creator must be not null", HttpStatus.BAD_REQUEST),
     INVOICE_NOT_EXISTED(6006, "Invoice not exists", HttpStatus.BAD_REQUEST),
     INVOICE_STATUS_INVALID_TO_UPDATE(6007, "Invoice status is invalid to update", HttpStatus.BAD_REQUEST),
+    INVOICE_STATUS_INVALID_TO_TRANSFER_TO_ROOM(6008, "Invoice status is invalid to transfer to room", HttpStatus.BAD_REQUEST),
+    ROOM_CAPACITY_NOT_ENOUGH_TO_TRANSFER_TO(6009, "Room capacity not enough to transfer to", HttpStatus.BAD_REQUEST),
 
     // Account
     ACCOUNT_NOT_ACTIVE(7001, "Account is not active", HttpStatus.BAD_REQUEST),
@@ -89,6 +93,7 @@ public enum ErrorCode {
     ROOM_STATUS_NOT_VALID_TO_CREATE_ROOM_OF_INVOICE(9001, "Room status is not valid to create room of invoice", HttpStatus.BAD_REQUEST),
     ROOM_OF_INVOICE_EXISTED(9002, "Room of invoice already exists", HttpStatus.BAD_REQUEST),
     EXISTING_ROOM_OF_INVOICE_NOT_TRANSFERRED(9003, "Existing room of invoice not transferred", HttpStatus.BAD_REQUEST),
+    CURRENT_ROOM_ON_BILL(9004, "This is the current room on the bill", HttpStatus.BAD_REQUEST),
 
     // ProductOfInvoice
     PRODUCT_OF_INVOICE_QUANTITY_NULL(10001, "Product quantity in invoice must be not null", HttpStatus.BAD_REQUEST),

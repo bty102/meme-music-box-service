@@ -2,24 +2,30 @@ package com.bty.karaoke.mememusicboxservice.service.impl;
 
 import com.bty.karaoke.mememusicboxservice.constant.InvoiceStatus;
 import com.bty.karaoke.mememusicboxservice.constant.Role;
+import com.bty.karaoke.mememusicboxservice.constant.RoomBookingStatus;
+import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
 import com.bty.karaoke.mememusicboxservice.dto.request.InvoiceCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.RoomOfInvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.InvoiceResponse;
-import com.bty.karaoke.mememusicboxservice.entity.Account;
-import com.bty.karaoke.mememusicboxservice.entity.Invoice;
+import com.bty.karaoke.mememusicboxservice.dto.response.RoomOfInvoiceResponse;
+import com.bty.karaoke.mememusicboxservice.entity.*;
 import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.InvoiceMapper;
-import com.bty.karaoke.mememusicboxservice.repository.AccountRepository;
-import com.bty.karaoke.mememusicboxservice.repository.InvoiceRepository;
+import com.bty.karaoke.mememusicboxservice.repository.*;
 import com.bty.karaoke.mememusicboxservice.service.AccountService;
 import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
+import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
 import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +41,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final SystemConfigService systemConfigService;
     private final AccountService accountService;
+    private final RoomRepository roomRepository;
+    private final RoomBookingRepository roomBookingRepository;
+    private final RoomOfInvoiceRepository roomOfInvoiceRepository;
+    private final RoomOfInvoiceService roomOfInvoiceService;
 
     @Override
     public InvoiceResponse createInvoice(@Valid InvoiceCreationRequest request) {
@@ -125,6 +135,94 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setDiscountPercent(BigDecimal.ZERO);
         invoice = invoiceRepository.save(invoice);
         return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void transferRoomOfInvoice(Long invoiceId, Long transferToRoomId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_TRANSFER_TO_ROOM);
+        }
+
+        if(transferToRoomId == null) {
+            throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
+        }
+
+        Room room = roomRepository.findById(transferToRoomId)
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
+
+        if(!room.getIsActive()) {
+            throw new AppException(ErrorCode.ROOM_NOT_ACTIVE);
+        }
+
+        if(room.getStatus().equals(RoomStatus.IN_USE) || room.getStatus().equals(RoomStatus.TEMPORARY)) {
+            throw new AppException(ErrorCode.ROOM_STATUS_INVALID_TO_TRANSFER_TO);
+        }
+
+
+        if(room.getStatus().equals(RoomStatus.BOOKED)) {
+            RoomBooking roomBooking = roomBookingRepository.findFirstByRoomIdAndStatusOrderByBookingTimeAsc(transferToRoomId, RoomBookingStatus.PENDING)
+                    .get();
+
+            if(!roomBooking.getBookingTime().isAfter(LocalDateTime.now())) {
+                throw new AppException(ErrorCode.CURRENT_TIME_INVALID_TO_TRANSFER_TO_ROOM);
+            }
+
+            int minimumMinutesBeforeReservation = systemConfigService.getMinimumMinutesBeforeReservation();
+
+            if(Duration.between(LocalDateTime.now(), roomBooking.getBookingTime()).toMinutes()
+                    <= minimumMinutesBeforeReservation
+            ) {
+                throw new AppException(ErrorCode.CURRENT_TIME_INVALID_TO_TRANSFER_TO_ROOM);
+            }
+        }
+
+        if(roomOfInvoiceRepository.existsByInvoice_IdAndRoom_IdAndIsTransferred(invoiceId, transferToRoomId, false)) {
+            throw new AppException(ErrorCode.CURRENT_ROOM_ON_BILL);
+        }
+
+        // Chuyen thoi
+        RoomOfInvoice roomOfInvoice = roomOfInvoiceRepository.findByInvoice_IdAndIsTransferred(invoiceId, false)
+                .get();
+
+        Room currentRoom = roomOfInvoice.getRoom();
+
+        if(room.getCapacity() < currentRoom.getCapacity()) {
+            throw new AppException(ErrorCode.ROOM_CAPACITY_NOT_ENOUGH_TO_TRANSFER_TO);
+        }
+
+        roomOfInvoice.setCheckOutAt(LocalDateTime.now());
+        long minutes = Duration.between(roomOfInvoice.getCheckInAt(), roomOfInvoice.getCheckOutAt()).toMinutes();
+        roomOfInvoice.setDurationHours(BigDecimal.valueOf(minutes)
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP));
+        roomOfInvoice.setRoomCharge(roomOfInvoice.getDurationHours().multiply(roomOfInvoice.getRoom().getHourlyRate())
+                .setScale(0, RoundingMode.HALF_UP));
+        roomOfInvoice.setIsTransferred(true);
+        roomOfInvoiceRepository.save(roomOfInvoice);
+
+        if(currentRoom.getStatus().equals(RoomStatus.IN_USE)) {
+            currentRoom.setStatus(RoomStatus.AVAILABLE);
+        }
+        if(currentRoom.getStatus().equals(RoomStatus.TEMPORARY)) {
+            currentRoom.setStatus(RoomStatus.BOOKED);
+        }
+        roomRepository.save(currentRoom);
+
+        RoomOfInvoiceResponse roomOfInvoiceResponse = roomOfInvoiceService.createRoomOfInvoice(
+                RoomOfInvoiceCreationRequest.builder()
+                        .roomId(transferToRoomId)
+                        .invoiceId(invoiceId)
+                        .build()
+        );
+
+
     }
 
     private String generateInvoiceCode() {
