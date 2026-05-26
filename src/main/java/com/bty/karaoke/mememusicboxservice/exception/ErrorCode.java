@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatusCode;
 @Getter
 public enum ErrorCode {
 
+    UNKNOWN_ERROR(0, "Unknown error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_UPLOADED_IMAGE(1, "File must be image", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     IMAGE_UPLOAD_EXCEPTION(2, "Upload image failed", HttpStatus.INTERNAL_SERVER_ERROR),
 

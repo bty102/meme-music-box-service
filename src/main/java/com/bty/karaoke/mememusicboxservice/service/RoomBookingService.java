@@ -7,6 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface RoomBookingService {
 
-    @PreAuthorize("hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).MEMBER.name())")
+//    @PreAuthorize("hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).MEMBER.name())")
     public RoomBookingResponse createRoomBooking(@Valid RoomBookingCreationRequest request, Long memberAccountId);
 }
