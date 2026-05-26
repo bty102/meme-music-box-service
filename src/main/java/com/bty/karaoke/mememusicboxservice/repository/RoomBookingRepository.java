@@ -16,4 +16,8 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
     );
 
     boolean existsByRoom_IdAndBookingTimeBetween(Long roomId, LocalDateTime bookingTimeAfter, LocalDateTime bookingTimeBefore);
+
+    boolean existsByRoom_IdAndStatus(Long roomId, RoomBookingStatus status);
+
+    boolean existsByIdAndMemberAccount_Email(Long id, String memberAccountEmail);
 }

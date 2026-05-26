@@ -115,6 +115,11 @@ public enum ErrorCode {
     BOOKING_TIME_NULL(11001, "Booking time must be not null", HttpStatus.BAD_REQUEST),
     BOOKING_TIME_INVALID(11002, "Booking time is invalid", HttpStatus.BAD_REQUEST),
     ROOM_STATUS_INVALID_TO_BOOK(11003, "Room status is invalid to book", HttpStatus.BAD_REQUEST),
+    ROOM_BOOKING_NOT_EXISTED(11004, "Room booking not existed", HttpStatus.BAD_REQUEST),
+    ROOM_BOOKING_STATUS_INVALID_TO_CHECK_IN(11005, "Room booking status is invalid to check in", HttpStatus.BAD_REQUEST),
+    ROOM_STATUS_INVALID_TO_CHECK_IN_ROOM_BOOKING(11006, "Room status is invalid to check in room booking", HttpStatus.BAD_REQUEST),
+    CURRENT_TIME_CANNOT_CHECK_IN_ROOM_BOOKING(11007, "Current time can't check in room booking", HttpStatus.BAD_REQUEST),
+    ROOM_BOOKING_STATUS_INVALID_TO_CANCEL(11008, "Room status is invalid to cancel", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

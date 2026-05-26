@@ -45,27 +45,27 @@ public class DataInit implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        try {
-//            var auth = new UsernamePasswordAuthenticationToken(
-//                    "system",
-//                    null,
-//                    List.of(new SimpleGrantedAuthority("ROLE_" + Role.ADMIN.name()))
-//            );
-//
-//            SecurityContextHolder.getContext().setAuthentication(auth);
-//
-//            // Default system configs
-//            defaultSystemConfig();
-//
-//            // Init data
-//            initRoomAreas();
-//            initRooms();
-//            initProducts();
-//            initPointDiscounts();
-//            initAccounts();
-//        } finally {
-//            SecurityContextHolder.clearContext();
-//        }
+        try {
+            var auth = new UsernamePasswordAuthenticationToken(
+                    "system",
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + Role.ADMIN.name()))
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            // Default system configs
+            defaultSystemConfig();
+
+            // Init data
+            initRoomAreas();
+            initRooms();
+            initProducts();
+            initPointDiscounts();
+            initAccounts();
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     private void defaultSystemConfig() {
