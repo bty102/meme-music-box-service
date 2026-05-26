@@ -109,6 +109,11 @@ public enum ErrorCode {
     INVOICE_STATUS_INVALID_TO_UPDATE_PRODUCT_OF_INVOICE(10008, "Invoice status is invalid to update product of invoice", HttpStatus.BAD_REQUEST),
     PRODUCT_STOCK_QUANTITY_NOT_ENOUGH_TO_UPDATE_PRODUCT_OF_INVOICE(10009, "Product stock quantity not enough to update product of invoice", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_ACTIVE_TO_UPDATE_PRODUCT_OF_INVOICE(10010, "Product not active to update product of invoice", HttpStatus.BAD_REQUEST),
+
+    // RoomBooking
+    BOOKING_TIME_NULL(11001, "Booking time must be not null", HttpStatus.BAD_REQUEST),
+    BOOKING_TIME_INVALID(11002, "Booking time is invalid", HttpStatus.BAD_REQUEST),
+    ROOM_STATUS_INVALID_TO_BOOK(11003, "Room status is invalid to book", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

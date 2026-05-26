@@ -45,6 +45,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final RoomBookingRepository roomBookingRepository;
     private final RoomOfInvoiceRepository roomOfInvoiceRepository;
     private final RoomOfInvoiceService roomOfInvoiceService;
+    private final MemberProfileRepository memberProfileRepository;
 
     @Override
     public InvoiceResponse createInvoice(@Valid InvoiceCreationRequest request) {
@@ -284,7 +285,16 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         invoice.setStatus(InvoiceStatus.PAID);
-        invoiceRepository.save(invoice);
+        invoice = invoiceRepository.save(invoice);
+
+        if(invoice.getMemberAccount() != null) {
+            // Diem thuong cong them
+            int additionalLoyaltyPoint = invoice.getFinalAmount().divide(BigDecimal.valueOf(systemConfigService.getMoneyAmountVNDToLoyaltyPoint())).intValue();
+            Account member = invoice.getMemberAccount();
+            MemberProfile memberProfile = member.getMemberProfile();
+            memberProfile.setLoyaltyPoint(memberProfile.getLoyaltyPoint() + additionalLoyaltyPoint);
+            memberProfileRepository.save(memberProfile);
+        }
     }
 
     @Override

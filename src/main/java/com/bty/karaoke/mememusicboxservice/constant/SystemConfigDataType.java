@@ -4,4 +4,5 @@ public enum SystemConfigDataType {
     STRING,
     INT,
     DECIMAL,
+
 }
