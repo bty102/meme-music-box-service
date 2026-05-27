@@ -38,6 +38,11 @@ public class RabbitMQConfig {
         return new Queue("booking.queue");
     }
 
+    @Bean(name = "registrationOTPReceivedEmailQueue")
+    public Queue registrationOTPReceivedEmailQueue() {
+        return new Queue("registrationOTPReceivedEmail.queue");
+    }
+
     @Bean(name = "memeExchange")
     public DirectExchange memeExchange() {
         return new DirectExchange("meme.exchange");
@@ -49,5 +54,13 @@ public class RabbitMQConfig {
             @Qualifier("memeExchange") DirectExchange memeExchange
     ) {
         return BindingBuilder.bind(bookingQueue).to(memeExchange).with("booking.queue");
+    }
+
+    @Bean
+    public Binding registrationOTPReceivedEmailBinding(
+            @Qualifier("registrationOTPReceivedEmailQueue") Queue registrationOTPReceivedEmailQueue,
+            @Qualifier("memeExchange") DirectExchange memeExchange
+    ) {
+        return BindingBuilder.bind(registrationOTPReceivedEmailQueue).to(memeExchange).with("registrationOTPReceivedEmail.queue");
     }
 }

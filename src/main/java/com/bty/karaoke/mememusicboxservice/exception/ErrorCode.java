@@ -89,6 +89,9 @@ public enum ErrorCode {
     // Account
     ACCOUNT_NOT_ACTIVE(7001, "Account is not active", HttpStatus.BAD_REQUEST),
     ACCOUNT_NOT_MEMBER(7002, "Account is not member", HttpStatus.BAD_REQUEST),
+    ACCOUNT_EXISTED(7003, "Account already exists", HttpStatus.BAD_REQUEST),
+    ACCOUNT_PASSWORD_NULL(7004, "Password must be not null", HttpStatus.BAD_REQUEST),
+    ACCOUNT_PASSWORD_SIZE_INVALID(7005, "Password size must be greater than or equal 0", HttpStatus.BAD_REQUEST),
 
     // SystemConfig
     DEFAULT_SYSTEM_CONFIG_NOT_CREATED(8001, "Default system config is not created", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -120,6 +123,16 @@ public enum ErrorCode {
     ROOM_STATUS_INVALID_TO_CHECK_IN_ROOM_BOOKING(11006, "Room status is invalid to check in room booking", HttpStatus.BAD_REQUEST),
     CURRENT_TIME_CANNOT_CHECK_IN_ROOM_BOOKING(11007, "Current time can't check in room booking", HttpStatus.BAD_REQUEST),
     ROOM_BOOKING_STATUS_INVALID_TO_CANCEL(11008, "Room status is invalid to cancel", HttpStatus.BAD_REQUEST),
+
+    // OTP
+    SEND_REGISTRATION_OTP_UNSUCCESSFULLY(12001, "Send registration OTP unsuccessfully", HttpStatus.INTERNAL_SERVER_ERROR),
+    OTP_INVALID(12002, "OTP invalid", HttpStatus.BAD_REQUEST),
+
+    // MemberProfile
+    MEMBER_PROFILE_FULL_NAME_NULL(13001, "Full name must be not null", HttpStatus.BAD_REQUEST),
+    MEMBER_PROFILE_FULL_NAME_SIZE_INVALID(13002, "Full name size must be greater than or equal 0", HttpStatus.BAD_REQUEST),
+    MEMBER_PROFILE_IS_MALE_NULL(13003, "Is male must be not null", HttpStatus.BAD_REQUEST),
+    MEMBER_PROFILE_DATE_OF_BIRTH_NULL(13004, "Date of birth must be not null", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
