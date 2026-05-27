@@ -136,6 +136,14 @@ public class AccountServiceImpl implements AccountService {
         return accountMapper.toAccountResponse(account);
     }
 
+    @Override
+    public List<AccountResponse> getActiveMemberAccounts() {
+        List<Account> accountList = accountRepository.findByIsActiveAndRole(true, Role.MEMBER);
+        return accountList.stream()
+                .map(account -> accountMapper.toAccountResponse(account))
+                .toList();
+    }
+
     private String generateMemberCode() {
         return "MB" +
                 System.currentTimeMillis() +

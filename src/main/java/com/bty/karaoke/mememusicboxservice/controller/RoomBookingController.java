@@ -8,6 +8,7 @@ import com.bty.karaoke.mememusicboxservice.service.RoomBookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -61,6 +62,37 @@ public class RoomBookingController {
         var response = roomBookingService.cancelRoomBooking(roomBookingId);
         return ResponseEntity.ok(
                 ApiResponse.<RoomBookingResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/ofRoom", produces = "application/json")
+    public ResponseEntity<ApiResponse<Page<RoomBookingResponse>>> getRoomBookingsOfRoom(
+          @RequestParam(name = "roomId", required = true) Long roomId,
+          @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
+          @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize
+    ) {
+        var response = roomBookingService.getRoomBookingsOfRoom(roomId, pageNumber, pageSize);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Page<RoomBookingResponse>>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/ofMember", produces = "application/json")
+    public ResponseEntity<ApiResponse<Page<RoomBookingResponse>>> getRoomBookingsOfMember(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize
+    ) {
+
+        Long memberAccountId = Long.parseLong(jwt.getClaims().get("accId").toString());
+        var response = roomBookingService.getRoomBookingsOfMember(memberAccountId, pageNumber, pageSize);
+        return ResponseEntity.ok(
+                ApiResponse.<Page<RoomBookingResponse>>builder()
                         .result(response)
                         .build()
         );

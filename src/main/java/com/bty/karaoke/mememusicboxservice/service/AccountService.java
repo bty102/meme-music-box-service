@@ -5,8 +5,10 @@ import com.bty.karaoke.mememusicboxservice.dto.request.MemberAccountRegisRequest
 import com.bty.karaoke.mememusicboxservice.dto.response.AccRegisVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccountResponse;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface AccountService {
 
@@ -19,4 +21,11 @@ public interface AccountService {
     public AccRegisVerificationResponse accRegisVerification(AccRegisVerificationRequest request);
 
     public AccountResponse createMemberAccount(String email, @Valid MemberAccountRegisRequest request);
+
+    @PreAuthorize("""
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
+    public List<AccountResponse> getActiveMemberAccounts();
 }

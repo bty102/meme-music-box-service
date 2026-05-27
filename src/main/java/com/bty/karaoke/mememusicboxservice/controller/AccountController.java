@@ -17,6 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/accounts")
 @RequiredArgsConstructor
@@ -54,6 +56,16 @@ public class AccountController {
         var response = accountService.createMemberAccount(email, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.<AccountResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/activeMembers", produces = "application/json")
+    public ResponseEntity<ApiResponse<List<AccountResponse>>> getActiveMemberAccounts() {
+        var response = accountService.getActiveMemberAccounts();
+        return ResponseEntity.ok(
+                ApiResponse.<List<AccountResponse>>builder()
                         .result(response)
                         .build()
         );

@@ -22,6 +22,9 @@ import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
 import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -190,5 +193,36 @@ public class RoomBookingServiceImpl implements RoomBookingService {
         }
         roomRepository.save(room);
         return roomBookingMapper.toRoomBookingResponse(roomBooking);
+    }
+
+    @Override
+    public Page<RoomBookingResponse> getRoomBookingsOfRoom(Long roomId, int pageNumber, int pageSize) {
+
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+        if (pageSize < 1) {
+            pageSize = 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<RoomBooking> roomBookingPage = roomBookingRepository.findByRoom_IdOrderByCreatedAtDesc(roomId, pageable);
+        return roomBookingPage.map(roomBookingMapper::toRoomBookingResponse);
+    }
+
+    @Override
+    public Page<RoomBookingResponse> getRoomBookingsOfMember(Long memberAccountId, int pageNumber, int pageSize) {
+
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+        if (pageSize < 1) {
+            pageSize = 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        Page<RoomBooking> roomBookingPage = roomBookingRepository.findByMemberAccount_IdOrderByCreatedAtDesc(memberAccountId, pageable);
+        return roomBookingPage.map(roomBookingMapper::toRoomBookingResponse);
     }
 }

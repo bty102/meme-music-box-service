@@ -2,6 +2,8 @@ package com.bty.karaoke.mememusicboxservice.repository;
 
 import com.bty.karaoke.mememusicboxservice.constant.InvoiceStatus;
 import com.bty.karaoke.mememusicboxservice.entity.RoomOfInvoice;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +25,12 @@ public interface RoomOfInvoiceRepository extends JpaRepository<RoomOfInvoice, Lo
     Optional<RoomOfInvoice> findByRoom_IdAndInvoice_StatusAndIsTransferred(Long roomId, InvoiceStatus invoiceStatus, Boolean isTransferred);
 
     List<RoomOfInvoice> findByInvoice_Id(Long invoiceId);
+
+    Page<RoomOfInvoice> findByRoom_IdAndIsTransferred(Long roomId, Boolean isTransferred, Pageable pageable);
+
+    Page<RoomOfInvoice> findByRoom_IdAndIsTransferredOrderByInvoice_CreatedAtDesc(
+        Long roomId,
+        Boolean isTransferred,
+        Pageable pageable
+);
 }

@@ -19,6 +19,10 @@ import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
 import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -67,7 +71,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         BigDecimal discountPercent = BigDecimal.ZERO;
-        if(member != null) {
+        if (member != null) {
             discountPercent = accountService.getDiscountPercentByMemberAccountId(member.getId());
         }
 
@@ -90,25 +94,25 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse updateMemberOfInvoice(Long invoiceId, Long memberAccountId) {
-        if(invoiceId == null) {
+        if (invoiceId == null) {
             throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
         }
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
-        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+        if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE);
         }
 
-        if(memberAccountId == null) {
+        if (memberAccountId == null) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
         }
         Account account = accountRepository.findById(memberAccountId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
-        if(!account.getIsActive()) {
+        if (!account.getIsActive()) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
         }
-        if(!account.getRole().equals(Role.MEMBER)) {
+        if (!account.getRole().equals(Role.MEMBER)) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_MEMBER);
         }
 
@@ -122,13 +126,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceResponse deleteMemberOfInvoice(Long invoiceId) {
 
-        if(invoiceId == null) {
+        if (invoiceId == null) {
             throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
         }
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
-        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+        if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE);
         }
 
@@ -141,51 +145,51 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void transferRoomOfInvoice(Long invoiceId, Long transferToRoomId) {
-        if(invoiceId == null) {
+        if (invoiceId == null) {
             throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
         }
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
-        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+        if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_TRANSFER_TO_ROOM);
         }
 
-        if(transferToRoomId == null) {
+        if (transferToRoomId == null) {
             throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
         }
 
         Room room = roomRepository.findById(transferToRoomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
 
-        if(!room.getIsActive()) {
+        if (!room.getIsActive()) {
             throw new AppException(ErrorCode.ROOM_NOT_ACTIVE);
         }
 
-        if(room.getStatus().equals(RoomStatus.IN_USE) || room.getStatus().equals(RoomStatus.TEMPORARY)) {
+        if (room.getStatus().equals(RoomStatus.IN_USE) || room.getStatus().equals(RoomStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.ROOM_STATUS_INVALID_TO_TRANSFER_TO);
         }
 
 
-        if(room.getStatus().equals(RoomStatus.BOOKED)) {
+        if (room.getStatus().equals(RoomStatus.BOOKED)) {
             RoomBooking roomBooking = roomBookingRepository.findFirstByRoomIdAndStatusOrderByBookingTimeAsc(transferToRoomId, RoomBookingStatus.PENDING)
                     .get();
 
-            if(!roomBooking.getBookingTime().isAfter(LocalDateTime.now())) {
+            if (!roomBooking.getBookingTime().isAfter(LocalDateTime.now())) {
                 throw new AppException(ErrorCode.CURRENT_TIME_INVALID_TO_TRANSFER_TO_ROOM);
             }
 
             int minimumMinutesBeforeReservation = systemConfigService.getMinimumMinutesBeforeReservation();
 
-            if(Duration.between(LocalDateTime.now(), roomBooking.getBookingTime()).toMinutes()
+            if (Duration.between(LocalDateTime.now(), roomBooking.getBookingTime()).toMinutes()
                     <= minimumMinutesBeforeReservation
             ) {
                 throw new AppException(ErrorCode.CURRENT_TIME_INVALID_TO_TRANSFER_TO_ROOM);
             }
         }
 
-        if(roomOfInvoiceRepository.existsByInvoice_IdAndRoom_IdAndIsTransferred(invoiceId, transferToRoomId, false)) {
+        if (roomOfInvoiceRepository.existsByInvoice_IdAndRoom_IdAndIsTransferred(invoiceId, transferToRoomId, false)) {
             throw new AppException(ErrorCode.CURRENT_ROOM_ON_BILL);
         }
 
@@ -195,7 +199,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Room currentRoom = roomOfInvoice.getRoom();
 
-        if(room.getCapacity() < currentRoom.getCapacity()) {
+        if (room.getCapacity() < currentRoom.getCapacity()) {
             throw new AppException(ErrorCode.ROOM_CAPACITY_NOT_ENOUGH_TO_TRANSFER_TO);
         }
 
@@ -208,10 +212,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         roomOfInvoice.setIsTransferred(true);
         roomOfInvoiceRepository.save(roomOfInvoice);
 
-        if(currentRoom.getStatus().equals(RoomStatus.IN_USE)) {
+        if (currentRoom.getStatus().equals(RoomStatus.IN_USE)) {
             currentRoom.setStatus(RoomStatus.AVAILABLE);
         }
-        if(currentRoom.getStatus().equals(RoomStatus.TEMPORARY)) {
+        if (currentRoom.getStatus().equals(RoomStatus.TEMPORARY)) {
             currentRoom.setStatus(RoomStatus.BOOKED);
         }
         roomRepository.save(currentRoom);
@@ -229,14 +233,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void checkOut(Long invoiceId) {
-        if(invoiceId == null) {
+        if (invoiceId == null) {
             throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
         }
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
-        if(!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
+        if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_CHECK_OUT);
         }
 
@@ -255,10 +259,10 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .setScale(0, RoundingMode.HALF_UP));
         roomOfInvoiceRepository.save(roomOfInvoice);
 
-        if(currentRoom.getStatus().equals(RoomStatus.IN_USE)) {
+        if (currentRoom.getStatus().equals(RoomStatus.IN_USE)) {
             currentRoom.setStatus(RoomStatus.AVAILABLE);
         }
-        if(currentRoom.getStatus().equals(RoomStatus.TEMPORARY)) {
+        if (currentRoom.getStatus().equals(RoomStatus.TEMPORARY)) {
             currentRoom.setStatus(RoomStatus.BOOKED);
         }
         roomRepository.save(currentRoom);
@@ -273,21 +277,21 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void paymentConfirmation(Long invoiceId) {
-        if(invoiceId == null) {
+        if (invoiceId == null) {
             throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
         }
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
-        if(!invoice.getStatus().equals(InvoiceStatus.UNPAID)) {
+        if (!invoice.getStatus().equals(InvoiceStatus.UNPAID)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_CONFIRM_PAYMENT);
         }
 
         invoice.setStatus(InvoiceStatus.PAID);
         invoice = invoiceRepository.save(invoice);
 
-        if(invoice.getMemberAccount() != null) {
+        if (invoice.getMemberAccount() != null) {
             // Diem thuong cong them
             int additionalLoyaltyPoint = invoice.getFinalAmount().divide(BigDecimal.valueOf(systemConfigService.getMoneyAmountVNDToLoyaltyPoint())).intValue();
             Account member = invoice.getMemberAccount();
@@ -299,7 +303,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse getTemporaryInvoiceOfRoom(Long roomId) {
-        if(roomId == null) {
+        if (roomId == null) {
             throw new AppException(ErrorCode.ROOM_NOT_EXISTED);
         }
 
@@ -312,6 +316,66 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Invoice invoice = roomOfInvoice.getInvoice();
         return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
+    @Override
+    public Page<InvoiceResponse> getInvoicesOfRoom(Long roomId, int pageNumber, int pageSize) {
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+        if (pageSize < 1) {
+            pageSize = 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Invoice> invoices =
+                invoiceRepository.findDistinctByRoomOfInvoices_Room_IdAndRoomOfInvoices_IsTransferredOrderByCreatedAtDesc(roomId, false, pageable);
+        return invoices.map(invoiceMapper::toInvoiceResponse);
+    }
+
+    @Override
+    public Page<InvoiceResponse> getInvoices(int pageNumber, int pageSize) {
+
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+        if (pageSize < 1) {
+            pageSize = 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Invoice> invoicePage = invoiceRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return invoicePage.map(invoiceMapper::toInvoiceResponse);
+    }
+
+    @Override
+    public Page<InvoiceResponse> getInvoicesByCreatorAccId(Long creatorAccountId, int pageNumber, int pageSize) {
+
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+        if (pageSize < 1) {
+            pageSize = 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Invoice> invoicePage = invoiceRepository.findByCreatedByAccount_IdOrderByCreatedAtDesc(creatorAccountId, pageable);
+        return invoicePage.map(invoiceMapper::toInvoiceResponse);
+    }
+
+    @Override
+    public Page<InvoiceResponse> getInvoicesOfMemberAccId(Long memberAccountId, int pageNumber, int pageSize) {
+
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
+        if (pageSize < 1) {
+            pageSize = 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Invoice> invoicePage = invoiceRepository.findByMemberAccount_IdOrderByCreatedAtDesc(memberAccountId, pageable);
+        return invoicePage.map(invoiceMapper::toInvoiceResponse);
     }
 
     private String generateInvoiceCode() {
