@@ -71,6 +71,8 @@ public enum ErrorCode {
     ACCESSTOKEN_GENERATION_FAILED(5003, "Access token generation is failed", HttpStatus.INTERNAL_SERVER_ERROR),
     LOGOUT_FAILED(5004, "Logout failed", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_ACCESSTOKEN(5005, "Access token is invalid", HttpStatus.BAD_REQUEST),
+    UNAUTHENTICATED(5006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(5007, "You do not have permission", HttpStatus.FORBIDDEN),
 
     // Invoice
     INVOICE_DISCOUNT_PERCENT_NULL(6001, "Invoice discount percent must be not null", HttpStatus.BAD_REQUEST),
