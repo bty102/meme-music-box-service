@@ -9,10 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -120,10 +117,10 @@ public class InvoiceController {
             @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
             @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize,
             @AuthenticationPrincipal Jwt jwt
-            ) {
+    ) {
 
         Long accountId = Long.parseLong(jwt.getClaims().get("accId").toString());
-        var response = invoiceService.getInvoicesByCreatorAccId(accountId,  pageNumber, pageSize);
+        var response = invoiceService.getInvoicesByCreatorAccId(accountId, pageNumber, pageSize);
         return ResponseEntity.ok(
                 ApiResponse.<Page<InvoiceResponse>>builder()
                         .result(response)
@@ -144,5 +141,15 @@ public class InvoiceController {
                         .result(response)
                         .build()
         );
+    }
+
+    @GetMapping(path = "/detail/{id}", produces = "application/json")
+    public ResponseEntity<ApiResponse<InvoiceResponse>> getInvoice(
+            @PathVariable("id") Long invoiceId
+    ) {
+        var response = invoiceService.getInvoice(invoiceId);
+        return ResponseEntity.ok(ApiResponse.<InvoiceResponse>builder()
+                .result(response)
+                .build());
     }
 }

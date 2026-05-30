@@ -378,6 +378,17 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoicePage.map(invoiceMapper::toInvoiceResponse);
     }
 
+    @Override
+    public InvoiceResponse getInvoice(Long invoiceId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
     private String generateInvoiceCode() {
 
         String datePart = LocalDate.now()

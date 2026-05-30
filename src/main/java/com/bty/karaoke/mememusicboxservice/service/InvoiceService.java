@@ -99,4 +99,11 @@ public interface InvoiceService {
      * @return
      */
     public Page<InvoiceResponse> getInvoicesOfMemberAccId(Long memberAccountId, int pageNumber, int pageSize);
+
+    @PreAuthorize("""
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
+    public InvoiceResponse getInvoice(Long invoiceId);
 }
