@@ -100,7 +100,9 @@ public interface InvoiceService {
      */
     public Page<InvoiceResponse> getInvoicesOfMemberAccId(Long memberAccountId, int pageNumber, int pageSize);
 
-    @PreAuthorize("""
+    @PreAuthorize("""       
+        @invoiceRepository.existsByIdAndMemberAccount_Email(#invoiceId, authentication.principal.getSubject())
+        or
         hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
         or
         hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
