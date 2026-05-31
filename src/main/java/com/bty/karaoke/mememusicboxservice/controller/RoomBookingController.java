@@ -97,4 +97,16 @@ public class RoomBookingController {
                         .build()
         );
     }
+
+    @GetMapping(path = "/{roomBookingId}", produces = "application/json")
+    public ResponseEntity<ApiResponse<RoomBookingResponse>> getRoomBooking(
+            @PathVariable("roomBookingId") Long roomBookingId
+    ) {
+        var response = roomBookingService.getRoomBookingById(roomBookingId);
+        return ResponseEntity.ok(
+                ApiResponse.<RoomBookingResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
 }

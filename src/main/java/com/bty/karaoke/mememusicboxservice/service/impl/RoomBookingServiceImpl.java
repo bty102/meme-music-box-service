@@ -225,4 +225,14 @@ public class RoomBookingServiceImpl implements RoomBookingService {
         Page<RoomBooking> roomBookingPage = roomBookingRepository.findByMemberAccount_IdOrderByCreatedAtDesc(memberAccountId, pageable);
         return roomBookingPage.map(roomBookingMapper::toRoomBookingResponse);
     }
+
+    @Override
+    public RoomBookingResponse getRoomBookingById(Long roomBookingId) {
+        if(roomBookingId == null) {
+            throw new AppException(ErrorCode.ROOM_BOOKING_NOT_EXISTED);
+        }
+        RoomBooking roomBooking = roomBookingRepository.findById(roomBookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_BOOKING_NOT_EXISTED));
+        return roomBookingMapper.toRoomBookingResponse(roomBooking);
+    }
 }

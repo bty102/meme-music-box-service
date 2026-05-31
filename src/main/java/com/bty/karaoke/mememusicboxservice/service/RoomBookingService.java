@@ -50,4 +50,14 @@ public interface RoomBookingService {
      * @return
      */
     public Page<RoomBookingResponse> getRoomBookingsOfMember(Long memberAccountId, int pageNumber, int pageSize);
+
+
+    @PreAuthorize("""
+                @roomBookingRepository.existsByIdAndMemberAccount_Email(#roomBookingId, authentication.principal.getSubject())
+                or
+                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+                or
+                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+            """)
+    public RoomBookingResponse getRoomBookingById(Long roomBookingId);
 }
