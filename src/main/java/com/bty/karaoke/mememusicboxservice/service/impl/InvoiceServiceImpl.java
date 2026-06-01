@@ -13,10 +13,7 @@ import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.InvoiceMapper;
 import com.bty.karaoke.mememusicboxservice.repository.*;
-import com.bty.karaoke.mememusicboxservice.service.AccountService;
-import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
-import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
-import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
+import com.bty.karaoke.mememusicboxservice.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +23,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,6 +49,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final RoomOfInvoiceRepository roomOfInvoiceRepository;
     private final RoomOfInvoiceService roomOfInvoiceService;
     private final MemberProfileRepository memberProfileRepository;
+    private final TemplateEngine templateEngine;
+    private final PdfService pdfService;
 
     @Override
     public InvoiceResponse createInvoice(@Valid InvoiceCreationRequest request) {
@@ -387,6 +388,40 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
         return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
+    @Override
+    public String buildInvoiceHtml(Long invoiceId) {
+        if(invoiceId == null) {
+            throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
+        }
+
+        Invoice invoice =
+                invoiceRepository.findById(invoiceId)
+                        .orElseThrow(() ->
+                                new AppException(
+                                        ErrorCode.INVOICE_NOT_EXISTED
+                                ));
+
+        Context context = new Context();
+
+        context.setVariable("invoice", invoice);
+
+        return templateEngine.process(
+                "invoice/invoice-template",
+                context
+        );
+    }
+
+    @Override
+    public byte[] exportInvoicePDF(Long invoiceId) {
+        String invoiceHtml = null;
+        try {
+            invoiceHtml = buildInvoiceHtml(invoiceId);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.CANNOT_GENERATE_PDF);
+        }
+        return pdfService.generatePdf(invoiceHtml);
     }
 
     private String generateInvoiceCode() {

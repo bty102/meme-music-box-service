@@ -135,6 +135,9 @@ public enum ErrorCode {
     MEMBER_PROFILE_FULL_NAME_SIZE_INVALID(13002, "Full name size must be greater than or equal 0", HttpStatus.BAD_REQUEST),
     MEMBER_PROFILE_IS_MALE_NULL(13003, "Is male must be not null", HttpStatus.BAD_REQUEST),
     MEMBER_PROFILE_DATE_OF_BIRTH_NULL(13004, "Date of birth must be not null", HttpStatus.BAD_REQUEST),
+
+    // PDF
+    CANNOT_GENERATE_PDF(14001, "Cannot generate PDF", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

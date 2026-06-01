@@ -6,6 +6,8 @@ import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -151,5 +153,21 @@ public class InvoiceController {
         return ResponseEntity.ok(ApiResponse.<InvoiceResponse>builder()
                 .result(response)
                 .build());
+    }
+
+    @GetMapping("/pdf/{invoiceId}")
+    public ResponseEntity<byte[]> exportInvoicePDF(
+            @PathVariable("invoiceId") Long invoiceId
+    ) {
+
+        byte[] pdf = invoiceService.exportInvoicePDF(invoiceId);
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=invoice.pdf"
+                )
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

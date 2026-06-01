@@ -108,4 +108,8 @@ public interface InvoiceService {
         hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
     """)
     public InvoiceResponse getInvoice(Long invoiceId);
+
+    String buildInvoiceHtml(Long invoiceId);
+
+    byte[] exportInvoicePDF(Long invoiceId);
 }
