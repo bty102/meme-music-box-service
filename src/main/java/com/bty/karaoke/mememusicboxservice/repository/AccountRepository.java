@@ -2,6 +2,8 @@ package com.bty.karaoke.mememusicboxservice.repository;
 
 import com.bty.karaoke.mememusicboxservice.constant.Role;
 import com.bty.karaoke.mememusicboxservice.entity.Account;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +19,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByIsActive(Boolean isActive);
 
     List<Account> findByIsActiveAndRole(Boolean isActive, Role role);
+
+    Page<Account> findByRole(Role role, Pageable pageable);
+
+    Optional<Account> findByIdAndRole(Long id, Role role);
 }

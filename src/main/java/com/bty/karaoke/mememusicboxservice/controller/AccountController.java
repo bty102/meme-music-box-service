@@ -11,6 +11,7 @@ import com.cloudinary.Api;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -66,6 +67,32 @@ public class AccountController {
         var response = accountService.getActiveMemberAccounts();
         return ResponseEntity.ok(
                 ApiResponse.<List<AccountResponse>>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/members", produces = "application/json")
+    public ResponseEntity<ApiResponse<Page<AccountResponse>>> getMemberAccounts(
+
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize
+    ) {
+        var response = accountService.getMemberAccounts(pageNumber, pageSize);
+        return ResponseEntity.ok(
+                ApiResponse.<Page<AccountResponse>>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/members/{memberAccId}", produces = "application/json")
+    public ResponseEntity<ApiResponse<AccountResponse>> getMemberAccountById(
+            @PathVariable("memberAccId") Long memberId
+    ) {
+        var response = accountService.getMemberAccountById(memberId);
+        return ResponseEntity.ok(
+                ApiResponse.<AccountResponse>builder()
                         .result(response)
                         .build()
         );

@@ -20,6 +20,9 @@ import com.bty.karaoke.mememusicboxservice.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -142,6 +145,27 @@ public class AccountServiceImpl implements AccountService {
         return accountList.stream()
                 .map(account -> accountMapper.toAccountResponse(account))
                 .toList();
+    }
+
+    @Override
+    public Page<AccountResponse> getMemberAccounts(int pageNumber, int pageSize) {
+
+        if(pageNumber < 0) pageNumber = 0;
+        if(pageSize < 1) pageSize = 1;
+
+
+        Sort sort = Sort.by("createdAt").ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        Page<Account> accountPage = accountRepository.findByRole(Role.MEMBER, pageable);
+        return accountPage.map(account -> accountMapper.toAccountResponse(account));
+    }
+
+    @Override
+    public AccountResponse getMemberAccountById(Long id) {
+        if(id == null) throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
+        Account account = accountRepository.findByIdAndRole(id, Role.MEMBER)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+        return accountMapper.toAccountResponse(account);
     }
 
     private String generateMemberCode() {
