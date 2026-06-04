@@ -1,12 +1,10 @@
 package com.bty.karaoke.mememusicboxservice.controller;
 
-import com.bty.karaoke.mememusicboxservice.dto.request.AccRegisVerificationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeAccountUpdateRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeCreationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.MemberAccountRegisRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.*;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccRegisVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccountResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.ApiResponse;
+import com.bty.karaoke.mememusicboxservice.dto.response.ForgotPasswordVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.service.AccountService;
 import com.bty.karaoke.mememusicboxservice.service.OTPService;
 import com.cloudinary.Api;
@@ -152,6 +150,57 @@ public class AccountController {
         return ResponseEntity.ok(
                 ApiResponse.<AccountResponse>builder()
                         .result(response)
+                        .build()
+        );
+    }
+
+    @PutMapping(path = "/changePassword", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody PasswordChangeRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+
+        Long accountId = Long.parseLong(jwt.getClaims().get("accId").toString());
+        accountService.changePassword(accountId, request);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder().build()
+        );
+    }
+
+    @GetMapping(path = "/forgotPassword", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @RequestParam(name = "email", required = true) String email
+    ) {
+        accountService.forgotPassword(email);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .message("OTP has been sent to " + email)
+                        .build()
+        );
+    }
+
+    @PostMapping(path = "/verifyForgotPassword", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<ForgotPasswordVerificationResponse>> verifyForgotPassword(
+            @RequestBody ForgotPasswordVerificationRequest request
+    ) {
+        var response = accountService.forgotPasswordVerification(request);
+        return ResponseEntity.ok(
+                ApiResponse.<ForgotPasswordVerificationResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @PutMapping(path = "/passwordRecovery", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<Void>> recoverPassword(
+       @Valid @RequestBody PasswordRecoveryRequest request,
+       @AuthenticationPrincipal Jwt jwt
+    ) {
+
+        Long accountId = Long.parseLong(jwt.getClaims().get("accId").toString());
+        accountService.recoverPassword(accountId, request);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
                         .build()
         );
     }

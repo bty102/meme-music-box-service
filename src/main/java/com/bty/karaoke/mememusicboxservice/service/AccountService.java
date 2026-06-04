@@ -1,11 +1,9 @@
 package com.bty.karaoke.mememusicboxservice.service;
 
-import com.bty.karaoke.mememusicboxservice.dto.request.AccRegisVerificationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeAccountUpdateRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeCreationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.MemberAccountRegisRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.*;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccRegisVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccountResponse;
+import com.bty.karaoke.mememusicboxservice.dto.response.ForgotPasswordVerificationResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -90,4 +88,15 @@ public interface AccountService {
         hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
     """)
     public AccountResponse updateEmployeeAccount(Long accId, @Valid EmployeeAccountUpdateRequest request);
+
+    @PreAuthorize("""
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).MEMBER.name())
+    """)
+    public void changePassword(Long accId , @Valid PasswordChangeRequest request);
+
+    public void forgotPassword(String email);
+
+    public ForgotPasswordVerificationResponse forgotPasswordVerification(ForgotPasswordVerificationRequest request);
+
+    public void recoverPassword(Long accId, @Valid PasswordRecoveryRequest request);
 }

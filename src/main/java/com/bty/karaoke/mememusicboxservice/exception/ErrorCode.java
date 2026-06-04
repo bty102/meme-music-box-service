@@ -133,6 +133,7 @@ public enum ErrorCode {
     // OTP
     SEND_REGISTRATION_OTP_UNSUCCESSFULLY(12001, "Send registration OTP unsuccessfully", HttpStatus.INTERNAL_SERVER_ERROR),
     OTP_INVALID(12002, "OTP invalid", HttpStatus.BAD_REQUEST),
+    SEND_FORGOTPASSWORD_OTP_UNSUCCESSFULLY(12003, "Send forgot-password OTP unsuccessfully", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // MemberProfile
     MEMBER_PROFILE_FULL_NAME_NULL(13001, "Full name must be not null", HttpStatus.BAD_REQUEST),

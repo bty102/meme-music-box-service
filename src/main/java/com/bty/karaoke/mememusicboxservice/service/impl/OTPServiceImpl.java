@@ -48,8 +48,9 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public boolean regisOTPVerification(String email, String OTP) {
+        OTP otp = null;
         try {
-            OTP otp = otpRepository.findTopByEmailAndTypeOrderByCreatedAtDesc(email, OTPType.REGISTRATION)
+            otp = otpRepository.findTopByEmailAndTypeOrderByCreatedAtDesc(email, OTPType.REGISTRATION)
                     .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID));
 
             if (otp.getExpiryTime().isBefore(LocalDateTime.now())) {
@@ -66,6 +67,63 @@ public class OTPServiceImpl implements OTPService {
         } catch (Exception e) {
             return false;
         }
+
+        otp.setVerified(true);
+        otpRepository.save(otp);
+
+        return true;
+    }
+
+    @Override
+    public void sendAndSaveForgotPasswordOTP(String email) {
+
+        String otpCode = otpGenerator.generateOTP();
+
+        OTP otp = OTP.builder()
+                .otpCode(otpCode)
+                .type(OTPType.FORGOT_PASSWORD)
+                .email(email)
+                .expiryTime(LocalDateTime.now().plusMinutes(5))
+                .createdAt(LocalDateTime.now())
+                .verified(false)
+                .build();
+
+        otpRepository.save(otp);
+
+        String emailContent = emailTemplateBuilder.buildOTPEmailTemplate(email, otpCode);
+        try {
+            emailSender.sendHtmlEmail(email, "OTP xác nhận", emailContent);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.SEND_FORGOTPASSWORD_OTP_UNSUCCESSFULLY);
+        }
+    }
+
+    @Override
+    public boolean forgotPasswordOTPVerification(String email, String OTP) {
+
+        OTP otp = null;
+        try {
+            otp = otpRepository.findTopByEmailAndTypeOrderByCreatedAtDesc(email, OTPType.FORGOT_PASSWORD)
+                    .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID));
+
+            if (otp.getExpiryTime().isBefore(LocalDateTime.now())) {
+                throw new AppException(ErrorCode.OTP_INVALID);
+            }
+
+            if (otp.getVerified()) {
+                throw new AppException(ErrorCode.OTP_INVALID);
+            }
+
+            if (!otp.getOtpCode().equals(OTP)) {
+                throw new AppException(ErrorCode.OTP_INVALID);
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        otp.setVerified(true);
+        otpRepository.save(otp);
+
         return true;
     }
 }

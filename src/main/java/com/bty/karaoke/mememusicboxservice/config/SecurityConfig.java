@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/accounts/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/accounts/register/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/accounts/forgotPassword").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/accounts/verifyForgotPassword").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer

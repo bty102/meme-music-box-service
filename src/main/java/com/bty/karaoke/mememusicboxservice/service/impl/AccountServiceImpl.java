@@ -1,16 +1,11 @@
 package com.bty.karaoke.mememusicboxservice.service.impl;
 
 import com.bty.karaoke.mememusicboxservice.constant.Role;
-import com.bty.karaoke.mememusicboxservice.dto.request.AccRegisVerificationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeAccountUpdateRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeCreationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.MemberAccountRegisRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.*;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccRegisVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccountResponse;
-import com.bty.karaoke.mememusicboxservice.entity.Account;
-import com.bty.karaoke.mememusicboxservice.entity.EmployeeProfile;
-import com.bty.karaoke.mememusicboxservice.entity.MemberProfile;
-import com.bty.karaoke.mememusicboxservice.entity.PointDiscount;
+import com.bty.karaoke.mememusicboxservice.dto.response.ForgotPasswordVerificationResponse;
+import com.bty.karaoke.mememusicboxservice.entity.*;
 import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.AccountMapper;
@@ -104,6 +99,7 @@ public class AccountServiceImpl implements AccountService {
         if (!valid) {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
+
         // tao token thoi
         String regisToken = jwtUtil.generateToken(
                 Account.builder()
@@ -264,6 +260,55 @@ public class AccountServiceImpl implements AccountService {
         employeeAccount.setIsActive(request.getIsActive());
         employeeAccount = accountRepository.save(employeeAccount);
         return accountMapper.toAccountResponse(employeeAccount);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Long accId, @Valid PasswordChangeRequest request) {
+        if(accId == null) throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
+        Account account = accountRepository.findById(accId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+
+        if(!passwordEncoder.matches(request.getOldPassword(), account.getPasswordHash())) {
+            throw new AppException(ErrorCode.INCORRECT_PASSWORD);
+        }
+
+        account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        accountRepository.save(account);
+    }
+
+    @Override
+    public void forgotPassword(String email) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+
+        otpService.sendAndSaveForgotPasswordOTP(email);
+    }
+
+    @Override
+    public ForgotPasswordVerificationResponse forgotPasswordVerification(ForgotPasswordVerificationRequest request) {
+        boolean valid = otpService.forgotPasswordOTPVerification(request.getEmail(), request.getOtp());
+        if(!valid) {
+            throw new AppException(ErrorCode.OTP_INVALID);
+        }
+
+        // Generate token thoi
+        Account account = accountRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+        String token = jwtUtil.generateToken(account);
+        return ForgotPasswordVerificationResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    @Override
+    public void recoverPassword(Long accId, @Valid PasswordRecoveryRequest request) {
+        if (accId ==  null) throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
+        Account account = accountRepository.findById(accId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+
+        account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        accountRepository.save(account);
     }
 
     private String generateMemberCode() {
