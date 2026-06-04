@@ -2,16 +2,20 @@ package com.bty.karaoke.mememusicboxservice.service.impl;
 
 import com.bty.karaoke.mememusicboxservice.constant.Role;
 import com.bty.karaoke.mememusicboxservice.dto.request.AccRegisVerificationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeAccountUpdateRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.MemberAccountRegisRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccRegisVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccountResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Account;
+import com.bty.karaoke.mememusicboxservice.entity.EmployeeProfile;
 import com.bty.karaoke.mememusicboxservice.entity.MemberProfile;
 import com.bty.karaoke.mememusicboxservice.entity.PointDiscount;
 import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.AccountMapper;
 import com.bty.karaoke.mememusicboxservice.repository.AccountRepository;
+import com.bty.karaoke.mememusicboxservice.repository.EmployeeProfileRepository;
 import com.bty.karaoke.mememusicboxservice.repository.MemberProfileRepository;
 import com.bty.karaoke.mememusicboxservice.repository.PointDiscountRepository;
 import com.bty.karaoke.mememusicboxservice.service.AccountService;
@@ -26,10 +30,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +52,7 @@ public class AccountServiceImpl implements AccountService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final MemberProfileRepository memberProfileRepository;
+    private final EmployeeProfileRepository employeeProfileRepository;
 
     @Override
     public AccountResponse getAccountById(Long id) {
@@ -168,6 +175,97 @@ public class AccountServiceImpl implements AccountService {
         return accountMapper.toAccountResponse(account);
     }
 
+    @Override
+    public Page<AccountResponse> getEmployeeAccounts(int pageNumber, int pageSize) {
+
+        if(pageNumber < 0) pageNumber = 0;
+        if(pageSize < 1) pageSize = 1;
+
+
+        Sort sort = Sort.by("createdAt").ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        Page<Account> accountPage = accountRepository.findByRole(Role.EMPLOYEE, pageable);
+        return accountPage.map(account -> accountMapper.toAccountResponse(account));
+    }
+
+    @Override
+    public Page<AccountResponse> findEmployeeAccounts(String employeeCode, String employeeFullName, int pageNumber, int pageSize) {
+
+        if(pageNumber < 0) pageNumber = 0;
+        if(pageSize < 1) pageSize = 1;
+
+
+        Sort sort = Sort.by("createdAt").ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        Page<Account> accountPage = accountRepository.findByRoleAndEmployeeProfile_EmployeeCodeContainingIgnoreCaseOrEmployeeProfile_FullNameContainingIgnoreCase(Role.EMPLOYEE, employeeCode, employeeFullName, pageable);
+        return accountPage.map(account -> accountMapper.toAccountResponse(account));
+    }
+
+    @Override
+    public AccountResponse getEmployeeAccountById(Long accId) {
+        if(accId == null) throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
+        Account account = accountRepository.findByIdAndRole(accId, Role.EMPLOYEE)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+        return accountMapper.toAccountResponse(account);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AccountResponse createEmployeeAccount(@Valid EmployeeCreationRequest request) {
+        if(accountRepository.existsByEmail(request.getEmail()))
+            throw new AppException(ErrorCode.ACCOUNT_EXISTED);
+
+        if(employeeProfileRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new AppException(ErrorCode.EMPLOYEE_PROFILE_PHONE_NUMBER_EXISTED);
+        }
+        if(employeeProfileRepository.existsByNationalId(request.getNationalId())) {
+            throw new AppException(ErrorCode.EMPLOYEE_PROFILE_NATIONAL_ID_EXISTED);
+        }
+
+        Account account = Account.builder()
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(Role.EMPLOYEE)
+                .createdAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
+        EmployeeProfile employeeProfile = EmployeeProfile.builder()
+                .employeeCode(generateEmployeeCode())
+                .fullName(request.getFullName())
+                .phoneNumber(request.getPhoneNumber())
+                .nationalId(request.getNationalId())
+                .isMale(request.getIsMale())
+                .dateOfBirth(request.getDateOfBirth())
+                .address(request.getAddress())
+                .imageUrl(null)
+                .account(account)
+                .build();
+
+        account.setEmployeeProfile(employeeProfile);
+        account = accountRepository.save(account);
+        employeeProfileRepository.save(employeeProfile);
+        return accountMapper.toAccountResponse(account);
+    }
+
+    @Override
+    public AccountResponse updateEmployeeAccount(Long accId, @Valid EmployeeAccountUpdateRequest request) {
+        if(accId == null) throw new AppException(ErrorCode.ACCOUNT_NOT_EXISTED);
+        Account employeeAccount = accountRepository.findByIdAndRole(accId, Role.EMPLOYEE)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_EXISTED));
+
+        if(accountRepository.existsByEmailAndIdIsNot(request.getEmail(), accId)) {
+            throw new AppException(ErrorCode.ACCOUNT_EMAIL_EXISTED);
+        }
+
+        employeeAccount.setEmail(request.getEmail());
+        employeeAccount.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        employeeAccount.setIsActive(request.getIsActive());
+        employeeAccount = accountRepository.save(employeeAccount);
+        return accountMapper.toAccountResponse(employeeAccount);
+    }
+
     private String generateMemberCode() {
         return "MB" +
                 System.currentTimeMillis() +
@@ -176,4 +274,18 @@ public class AccountServiceImpl implements AccountService {
                         .substring(0, 4)
                         .toUpperCase();
     }
+
+    private String generateEmployeeCode() {
+
+    String timestamp = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
+
+    String random = UUID.randomUUID()
+            .toString()
+            .replace("-", "")
+            .substring(0, 5)
+            .toUpperCase();
+
+    return "EMP" + timestamp + random;
+}
 }

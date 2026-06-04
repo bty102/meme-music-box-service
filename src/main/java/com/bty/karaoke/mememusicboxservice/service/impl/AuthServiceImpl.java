@@ -37,6 +37,10 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.INCORRECT_PASSWORD);
         }
 
+        if(!account.getIsActive()) {
+            throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        }
+
         try {
             String accessToken = jwtUtil.generateToken(account);
             return AuthenticationResponse.builder()

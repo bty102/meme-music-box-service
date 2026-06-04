@@ -73,6 +73,7 @@ public enum ErrorCode {
     INVALID_ACCESSTOKEN(5005, "Access token is invalid", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(5006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(5007, "You do not have permission", HttpStatus.FORBIDDEN),
+    ACCOUNT_LOCKED(5008, "Account locked", HttpStatus.LOCKED),
 
     // Invoice
     INVOICE_DISCOUNT_PERCENT_NULL(6001, "Invoice discount percent must be not null", HttpStatus.BAD_REQUEST),
@@ -94,6 +95,9 @@ public enum ErrorCode {
     ACCOUNT_EXISTED(7003, "Account already exists", HttpStatus.BAD_REQUEST),
     ACCOUNT_PASSWORD_NULL(7004, "Password must be not null", HttpStatus.BAD_REQUEST),
     ACCOUNT_PASSWORD_SIZE_INVALID(7005, "Password size must be greater than or equal 0", HttpStatus.BAD_REQUEST),
+    ACCOUNT_EMAIL_NULL(7006, "Email must be not null", HttpStatus.BAD_REQUEST),
+    ACCOUNT_ACTIVE_STATE_NULL(7007, "Active state must be not null", HttpStatus.BAD_REQUEST),
+    ACCOUNT_EMAIL_EXISTED(7008, "Email already exists", HttpStatus.BAD_REQUEST),
 
     // SystemConfig
     DEFAULT_SYSTEM_CONFIG_NOT_CREATED(8001, "Default system config is not created", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -139,6 +143,20 @@ public enum ErrorCode {
 
     // PDF
     CANNOT_GENERATE_PDF(14001, "Cannot generate PDF", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // EmployeeProfile
+    EMPLOYEE_PROFILE_FULL_NAME_NULL(15001, "Full name must be not null", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_FULL_NAME_SIZE_INVALID(15002, "Full name size must be between 1 and 100", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_PHONE_NUMBER_NULL(15003, "Phone number must be not null", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_PHONE_NUMBER_SIZE_INVALID(15004, "Phone number size must be less than or equal 20", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_NATIONAL_ID_NULL(15005, "National ID must be not null", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_NATIONAL_ID_SIZE_INVALID(15006, "National ID size must be less than or equal 12", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_ISMALE_NULL(15007, "Is male must be not null", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_DATE_OF_BIRTH_NULL(15008, "Date of birth must be not null", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_ADDRESS_SIZE_INVALID(15009, "Address size must be less than or equal 255", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_PHONE_NUMBER_EXISTED(15010, "Phone number already existed", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_NATIONAL_ID_EXISTED(15011, "National ID already existed", HttpStatus.BAD_REQUEST),
+    EMPLOYEE_PROFILE_NOT_EXISTED(15012, "Employee profile not existed", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

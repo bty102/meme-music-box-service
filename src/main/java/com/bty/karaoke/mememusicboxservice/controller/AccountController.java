@@ -1,6 +1,8 @@
 package com.bty.karaoke.mememusicboxservice.controller;
 
 import com.bty.karaoke.mememusicboxservice.dto.request.AccRegisVerificationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeAccountUpdateRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.EmployeeCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.MemberAccountRegisRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccRegisVerificationResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.AccountResponse;
@@ -91,6 +93,62 @@ public class AccountController {
             @PathVariable("memberAccId") Long memberId
     ) {
         var response = accountService.getMemberAccountById(memberId);
+        return ResponseEntity.ok(
+                ApiResponse.<AccountResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/employees", produces = "application/json")
+    public ResponseEntity<ApiResponse<Page<AccountResponse>>> getEmployeeAccounts(
+            @RequestParam(name = "q", required = false, defaultValue = "") String query,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "1") int pageSize
+    ) {
+        Page<AccountResponse> response = null;
+        if(query.isEmpty()) {
+            response = accountService.getEmployeeAccounts(pageNumber, pageSize);
+        } else {
+            response = accountService.findEmployeeAccounts(query, query, pageNumber, pageSize);
+        }
+        return ResponseEntity.ok(
+                ApiResponse.<Page<AccountResponse>>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @GetMapping(path = "/employees/detail/{accId}", produces = "application/json")
+    public ResponseEntity<ApiResponse<AccountResponse>> getEmployeeAccountById(
+            @PathVariable("accId")  Long accId
+    ) {
+        var response = accountService.getEmployeeAccountById(accId);
+        return ResponseEntity.ok(
+                ApiResponse.<AccountResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @PostMapping(path = "/employees", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<AccountResponse>> createEmployeeAccount(
+            @Valid @RequestBody EmployeeCreationRequest request
+    ) {
+        var response = accountService.createEmployeeAccount(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.<AccountResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
+
+    @PutMapping(path = "/employees/{accId}", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<AccountResponse>> updateEmployeeAccount(
+            @PathVariable("accId") Long accId,
+            @Valid @RequestBody EmployeeAccountUpdateRequest request
+    ) {
+        var response = accountService.updateEmployeeAccount(accId, request);
         return ResponseEntity.ok(
                 ApiResponse.<AccountResponse>builder()
                         .result(response)
