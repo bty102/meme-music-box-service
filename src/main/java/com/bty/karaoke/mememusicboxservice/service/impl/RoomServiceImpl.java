@@ -1,11 +1,9 @@
 package com.bty.karaoke.mememusicboxservice.service.impl;
 
+import com.bty.karaoke.mememusicboxservice.constant.LogType;
 import com.bty.karaoke.mememusicboxservice.constant.RoomBookingStatus;
 import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
-import com.bty.karaoke.mememusicboxservice.dto.request.InvoiceCreationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.RoomCreationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.RoomOfInvoiceCreationRequest;
-import com.bty.karaoke.mememusicboxservice.dto.request.RoomUpdateRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.*;
 import com.bty.karaoke.mememusicboxservice.dto.response.InvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.RoomResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Room;
@@ -16,10 +14,8 @@ import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.RoomMapper;
 import com.bty.karaoke.mememusicboxservice.repository.*;
-import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
-import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
-import com.bty.karaoke.mememusicboxservice.service.RoomService;
-import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
+import com.bty.karaoke.mememusicboxservice.service.*;
+import com.bty.karaoke.mememusicboxservice.util.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,6 +44,8 @@ public class RoomServiceImpl implements RoomService {
     private final RoomOfInvoiceService roomOfInvoiceService;
     private final InvoiceRepository invoiceRepository;
     private final RoomOfInvoiceRepository roomOfInvoiceRepository;
+    private final SecurityUtil securityUtil;
+    private final SystemAuditLogService systemAuditLogService;
 
     @Override
     public RoomResponse createRoom(@Valid RoomCreationRequest request) {
@@ -200,6 +198,15 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_EXISTED));
 
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .logType(LogType.OPEN_ROOM)
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .oldValue(roomMapper.toRoomResponse(room))
+
+                .build();
+        //------------
+
         if(!room.getIsActive()) {
             throw new AppException(ErrorCode.ROOM_NOT_ACTIVE);
         }
@@ -240,6 +247,16 @@ public class RoomServiceImpl implements RoomService {
                         .invoiceId(invoiceResponse.getId())
                         .build()
         );
+
+        // Log
+        systemAuditLogCreationRequest.setInvoiceId(invoiceResponse.getId());
+        systemAuditLogCreationRequest.setNewValue(roomMapper.toRoomResponse(room));
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " opened roomId: "  + roomId
+                );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //-----------
     }
 
 }

@@ -13,39 +13,64 @@ public interface InvoiceService {
 
     public InvoiceResponse createInvoice(@Valid InvoiceCreationRequest request);
 
+//    @PreAuthorize("""
+//                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public InvoiceResponse updateMemberOfInvoice(Long invoiceId, Long memberAccountId);
 
+//    @PreAuthorize("""
+//                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public InvoiceResponse deleteMemberOfInvoice(Long invoiceId);
 
+//    @PreAuthorize("""
+//                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public void transferRoomOfInvoice(Long invoiceId, Long transferToRoomId);
 
+//    @PreAuthorize("""
+//                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public void checkOut(Long invoiceId);
 
+//    @PreAuthorize("""
+//                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#invoiceId, authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public void paymentConfirmation(Long invoiceId);
 
     @PreAuthorize("""

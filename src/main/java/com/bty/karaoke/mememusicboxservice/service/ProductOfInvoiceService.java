@@ -11,18 +11,28 @@ import java.util.List;
 
 public interface ProductOfInvoiceService {
 
+//    @PreAuthorize("""
+//                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#request.invoiceId, authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @invoiceRepository.existsByIdAndCreatedByAccount_Email(#request.invoiceId, authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public ProductOfInvoiceResponse createProductOfInvoice(@Valid ProductOfInvoiceCreationRequest request);
 
+//    @PreAuthorize("""
+//                @productOfInvoiceRepository.existsByIdAndInvoice_CreatedByAccount_Email(#id,  authentication.principal.getSubject())
+//                or
+//                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+//            """)
     @PreAuthorize("""
-                @productOfInvoiceRepository.existsByIdAndInvoice_CreatedByAccount_Email(#id,  authentication.principal.getSubject())
-                or
-                hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
-            """)
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).ADMIN.name())
+        or
+        hasRole(T(com.bty.karaoke.mememusicboxservice.constant.Role).EMPLOYEE.name())
+    """)
     public ProductOfInvoiceResponse updateProductOfInvoice(Long id, @Valid ProductOfInvoiceUpdateRequest request);
 
     @PreAuthorize("""

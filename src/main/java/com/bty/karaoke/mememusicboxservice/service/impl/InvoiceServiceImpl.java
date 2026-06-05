@@ -1,19 +1,19 @@
 package com.bty.karaoke.mememusicboxservice.service.impl;
 
-import com.bty.karaoke.mememusicboxservice.constant.InvoiceStatus;
-import com.bty.karaoke.mememusicboxservice.constant.Role;
-import com.bty.karaoke.mememusicboxservice.constant.RoomBookingStatus;
-import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
+import com.bty.karaoke.mememusicboxservice.constant.*;
 import com.bty.karaoke.mememusicboxservice.dto.request.InvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomOfInvoiceCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.SystemAuditLogCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.InvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.RoomOfInvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.entity.*;
 import com.bty.karaoke.mememusicboxservice.exception.AppException;
 import com.bty.karaoke.mememusicboxservice.exception.ErrorCode;
 import com.bty.karaoke.mememusicboxservice.mapper.InvoiceMapper;
+import com.bty.karaoke.mememusicboxservice.mapper.RoomOfInvoiceMapper;
 import com.bty.karaoke.mememusicboxservice.repository.*;
 import com.bty.karaoke.mememusicboxservice.service.*;
+import com.bty.karaoke.mememusicboxservice.util.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +32,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -51,6 +53,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final MemberProfileRepository memberProfileRepository;
     private final TemplateEngine templateEngine;
     private final PdfService pdfService;
+    private final SecurityUtil securityUtil;
+    private final SystemAuditLogService systemAuditLogService;
+    private final RoomOfInvoiceMapper roomOfInvoiceMapper;
 
     @Override
     public InvoiceResponse createInvoice(@Valid InvoiceCreationRequest request) {
@@ -94,12 +99,22 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public InvoiceResponse updateMemberOfInvoice(Long invoiceId, Long memberAccountId) {
         if (invoiceId == null) {
             throw new AppException(ErrorCode.INVOICE_NOT_EXISTED);
         }
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .logType(LogType.UPDATE_MEMBER_OF_INVOICE)
+                .invoiceId(invoiceId)
+                .oldValue(invoiceMapper.toInvoiceResponse(invoice))
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .build();
+        //----------
 
         if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE);
@@ -120,11 +135,22 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setMemberAccount(account);
         invoice.setDiscountPercent(accountService.getDiscountPercentByMemberAccountId(memberAccountId));
         invoice = invoiceRepository.save(invoice);
+
+        // Log
+        systemAuditLogCreationRequest.setNewValue(invoiceMapper.toInvoiceResponse(invoice));
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " updated member of the invoice to memberAccId: " + memberAccountId
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //-------------
+
         return invoiceMapper.toInvoiceResponse(invoice);
 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public InvoiceResponse deleteMemberOfInvoice(Long invoiceId) {
 
         if (invoiceId == null) {
@@ -133,6 +159,15 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
 
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .logType(LogType.DELETE_MEMBER_OF_INVOICE)
+                .invoiceId(invoiceId)
+                .oldValue(invoiceMapper.toInvoiceResponse(invoice))
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .build();
+        //
+
         if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_UPDATE);
         }
@@ -140,6 +175,16 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setMemberAccount(null);
         invoice.setDiscountPercent(BigDecimal.ZERO);
         invoice = invoiceRepository.save(invoice);
+
+        // Log
+        systemAuditLogCreationRequest.setNewValue(invoiceMapper.toInvoiceResponse(invoice));
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " deleted current member of the invoice"
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //-----------------
+
         return invoiceMapper.toInvoiceResponse(invoice);
     }
 
@@ -152,6 +197,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .logType(LogType.TRANSFER_ROOM_OF_INVOICE)
+                .invoiceId(invoiceId)
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .oldValue(
+                        invoice.getRoomOfInvoices().stream()
+                                .map(roomOfInvoice -> roomOfInvoiceMapper.toRoomOfInvoiceResponse(roomOfInvoice))
+                                .toList()
+                )
+                .build();
+        //--------------
 
         if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_TRANSFER_TO_ROOM);
@@ -228,6 +286,19 @@ public class InvoiceServiceImpl implements InvoiceService {
                         .build()
         );
 
+        // Log
+        List<RoomOfInvoiceResponse> newRoomOfInvoiceList = new ArrayList<>();
+        for(var x : invoice.getRoomOfInvoices()) {
+            newRoomOfInvoiceList.add(roomOfInvoiceMapper.toRoomOfInvoiceResponse(x));
+        }
+        newRoomOfInvoiceList.add(roomOfInvoiceResponse);
+        systemAuditLogCreationRequest.setNewValue(newRoomOfInvoiceList);
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " transferred the invoice to roomId: " + transferToRoomId
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //--------------
 
     }
 
@@ -240,6 +311,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .invoiceId(invoiceId)
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .logType(LogType.CHECK_OUT_INVOICE)
+                .oldValue(invoiceMapper.toInvoiceResponse(invoice))
+                .build();
+        //---------------
 
         if (!invoice.getStatus().equals(InvoiceStatus.TEMPORARY)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_CHECK_OUT);
@@ -273,6 +353,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setStatus(InvoiceStatus.UNPAID);
         invoiceRepository.save(invoice);
 
+        // Log
+        systemAuditLogCreationRequest.setNewValue(invoiceMapper.toInvoiceResponse(invoice));
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " checked out the invoice"
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //
     }
 
     @Override
@@ -284,6 +372,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_EXISTED));
+
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .invoiceId(invoiceId)
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .logType(LogType.PAYMENT_CONFIRMATION)
+                .oldValue(invoiceMapper.toInvoiceResponse(invoice))
+                .build();
+        //-----------------
 
         if (!invoice.getStatus().equals(InvoiceStatus.UNPAID)) {
             throw new AppException(ErrorCode.INVOICE_STATUS_INVALID_TO_CONFIRM_PAYMENT);
@@ -300,6 +397,15 @@ public class InvoiceServiceImpl implements InvoiceService {
             memberProfile.setLoyaltyPoint(memberProfile.getLoyaltyPoint() + additionalLoyaltyPoint);
             memberProfileRepository.save(memberProfile);
         }
+
+        // Log
+        systemAuditLogCreationRequest.setNewValue(invoiceMapper.toInvoiceResponse(invoice));
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " comfirmed the invoice paid"
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        // ------------------
     }
 
     @Override

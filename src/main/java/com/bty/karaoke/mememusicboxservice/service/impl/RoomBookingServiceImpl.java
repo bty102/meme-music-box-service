@@ -1,10 +1,12 @@
 package com.bty.karaoke.mememusicboxservice.service.impl;
 
+import com.bty.karaoke.mememusicboxservice.constant.LogType;
 import com.bty.karaoke.mememusicboxservice.constant.RoomBookingStatus;
 import com.bty.karaoke.mememusicboxservice.constant.RoomStatus;
 import com.bty.karaoke.mememusicboxservice.dto.request.InvoiceCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomBookingCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.request.RoomOfInvoiceCreationRequest;
+import com.bty.karaoke.mememusicboxservice.dto.request.SystemAuditLogCreationRequest;
 import com.bty.karaoke.mememusicboxservice.dto.response.InvoiceResponse;
 import com.bty.karaoke.mememusicboxservice.dto.response.RoomBookingResponse;
 import com.bty.karaoke.mememusicboxservice.entity.Account;
@@ -16,10 +18,8 @@ import com.bty.karaoke.mememusicboxservice.mapper.RoomBookingMapper;
 import com.bty.karaoke.mememusicboxservice.repository.AccountRepository;
 import com.bty.karaoke.mememusicboxservice.repository.RoomBookingRepository;
 import com.bty.karaoke.mememusicboxservice.repository.RoomRepository;
-import com.bty.karaoke.mememusicboxservice.service.InvoiceService;
-import com.bty.karaoke.mememusicboxservice.service.RoomBookingService;
-import com.bty.karaoke.mememusicboxservice.service.RoomOfInvoiceService;
-import com.bty.karaoke.mememusicboxservice.service.SystemConfigService;
+import com.bty.karaoke.mememusicboxservice.service.*;
+import com.bty.karaoke.mememusicboxservice.util.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,6 +44,8 @@ public class RoomBookingServiceImpl implements RoomBookingService {
     private final RoomBookingMapper roomBookingMapper;
     private final RoomOfInvoiceService roomOfInvoiceService;
     private final InvoiceService invoiceService;
+    private final SecurityUtil securityUtil;
+    private final SystemAuditLogService systemAuditLogService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -125,6 +127,14 @@ public class RoomBookingServiceImpl implements RoomBookingService {
         RoomBooking roomBooking = roomBookingRepository.findById(roomBookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_BOOKING_NOT_EXISTED));
 
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .logType(LogType.CHECK_IN_ROOMBOOKING)
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .oldValue(roomBookingMapper.toRoomBookingResponse(roomBooking))
+                .build();
+        //---------------
+
         if(!roomBooking.getStatus().equals(RoomBookingStatus.PENDING)) {
             throw new AppException(ErrorCode.ROOM_BOOKING_STATUS_INVALID_TO_CHECK_IN);
         }
@@ -165,6 +175,16 @@ public class RoomBookingServiceImpl implements RoomBookingService {
         }
         roomRepository.save(room);
 
+        // Log
+        systemAuditLogCreationRequest.setNewValue(roomBookingMapper.toRoomBookingResponse(roomBooking));
+        systemAuditLogCreationRequest.setInvoiceId(invoiceResponse.getId());
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " checked in roomBookingId: " + roomBookingId
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //-------------
+
         return roomBookingMapper.toRoomBookingResponse(roomBooking);
     }
 
@@ -177,6 +197,15 @@ public class RoomBookingServiceImpl implements RoomBookingService {
 
         RoomBooking roomBooking = roomBookingRepository.findById(roomBookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_BOOKING_NOT_EXISTED));
+
+        // Log
+        SystemAuditLogCreationRequest systemAuditLogCreationRequest = SystemAuditLogCreationRequest.builder()
+                .logType(LogType.CANCEL_ROOMBOOKING)
+                .changedByAccountId(securityUtil.getCurrentAccountId())
+                .oldValue(roomBookingMapper.toRoomBookingResponse(roomBooking))
+                .invoiceId(null)
+                .build();
+        //------------------
 
         if(!roomBooking.getStatus().equals(RoomBookingStatus.PENDING)) {
             throw new AppException(ErrorCode.ROOM_BOOKING_STATUS_INVALID_TO_CANCEL);
@@ -192,6 +221,16 @@ public class RoomBookingServiceImpl implements RoomBookingService {
             }
         }
         roomRepository.save(room);
+
+        // Log
+        systemAuditLogCreationRequest.setNewValue(roomBookingMapper.toRoomBookingResponse(roomBooking));
+        systemAuditLogCreationRequest.setDescription(
+                "AccId: " + systemAuditLogCreationRequest.getChangedByAccountId()
+                + " cancelled roomBookingId: " + roomBookingId
+        );
+        systemAuditLogService.createSystemAuditLog(systemAuditLogCreationRequest);
+        //-----------------
+
         return roomBookingMapper.toRoomBookingResponse(roomBooking);
     }
 

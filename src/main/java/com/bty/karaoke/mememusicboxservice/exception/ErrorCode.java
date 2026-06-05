@@ -158,6 +158,10 @@ public enum ErrorCode {
     EMPLOYEE_PROFILE_PHONE_NUMBER_EXISTED(15010, "Phone number already existed", HttpStatus.BAD_REQUEST),
     EMPLOYEE_PROFILE_NATIONAL_ID_EXISTED(15011, "National ID already existed", HttpStatus.BAD_REQUEST),
     EMPLOYEE_PROFILE_NOT_EXISTED(15012, "Employee profile not existed", HttpStatus.BAD_REQUEST),
+
+    // SystemAuditLog
+    LOG_TYPE_NULL(16001, "Log Type must be not null", HttpStatus.BAD_REQUEST),
+    CHANGED_BY_ACCOUNT_ID_NULL(16002, "Changed by Account ID must be not null", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
