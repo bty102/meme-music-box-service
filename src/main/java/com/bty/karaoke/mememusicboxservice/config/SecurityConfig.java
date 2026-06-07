@@ -39,6 +39,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/accounts/forgotPassword").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/accounts/verifyForgotPassword").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/return").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payment/vnpay/ipn").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer

@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
@@ -77,4 +78,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("year") Integer year,
             @Param("status") InvoiceStatus status
     );
+
+    Optional<Invoice> findByInvoiceCode(String invoiceCode);
 }
