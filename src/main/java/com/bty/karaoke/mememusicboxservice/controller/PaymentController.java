@@ -152,13 +152,23 @@ public class PaymentController {
         Context context = new Context();
         String responseCode = params.get("vnp_ResponseCode");
 
+
+        String txnRef = params.get("vnp_TxnRef");
+
+        String invoiceCode = txnRef.split("_")[0];
+
+        Invoice invoice = invoiceRepository.findByInvoiceCode(invoiceCode)
+                .get();
+
         if ("00".equals(responseCode)) {
 
             context.setVariable("paymentResult", "Thanh toán thành công");
+            context.setVariable("invoice", invoice);
             return templateEngine.process("/vnpay/payment-result", context);
         }
 
         context.setVariable("paymentResult", "Thanh toán thất bại");
+        context.setVariable("invoice", invoice);
         return templateEngine.process("/vnpay/payment-result", context);
     }
 
